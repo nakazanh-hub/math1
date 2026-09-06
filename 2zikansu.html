@@ -140,6 +140,20 @@
     }
     .btn-edit-user { background: none; border: none; color: #6c757d; font-size: 14px; cursor: pointer; text-decoration: underline; }
 
+    .menu-section-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #343a40;
+      text-align: left;
+      margin: 24px 0 12px 0;
+      padding-left: 10px;
+      border-left: 5px solid #007bff;
+    }
+    .menu-section-title.similar-title {
+      border-left-color: #fd7e14;
+      color: #d9480f;
+    }
+
     .menu-list {
       display: flex;
       flex-direction: column;
@@ -163,6 +177,20 @@
       border-color: #007bff;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    }
+
+    .menu-card.similar-card {
+      background: #fffcf8;
+      border-color: #ffe8cc;
+      border-left: 6px solid #fd7e14;
+    }
+    .menu-card.similar-card:hover {
+      background: #fff4e6;
+      border-color: #fd7e14;
+      box-shadow: 0 4px 12px rgba(253, 126, 20, 0.15);
+    }
+    .menu-card.similar-card .menu-card-badge {
+      background: #fd7e14;
     }
 
     .menu-card-title {
@@ -527,7 +555,12 @@
     </div>
     <div class="app-title">📉 2次関数 トレーニング</div>
     <div class="app-subtitle">挑戦したい問題セットを選択してください</div>
-    <div class="menu-list" id="menu-list-container"></div>
+    
+    <div class="menu-section-title">📘 基本問題セット</div>
+    <div class="menu-list" id="menu-basic-container"></div>
+
+    <div class="menu-section-title similar-title">🔥 類問（チャレンジ・復習用）</div>
+    <div class="menu-list" id="menu-similar-container"></div>
   </div>
 
   <!-- 2. クイズ画面 -->
@@ -615,6 +648,7 @@
   const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyGnkVZTzXDLqCpVtrBkc7Ygg_qFDfn2QYNhl7xztrAOrb3zTwitVRS7czGRm3O_EE/exec";
 
   const quizSets = [
+    // --- 基本セット ---
     {
       id: "set-quad-graph-basic",
       title: "2次関数のグラフ ($y = ax^2 + q$, $y = a(x-p)^2$)(全9問)",
@@ -853,6 +887,247 @@
           explanation: "$y = -2(x^2 - 4x) = -2\{(x - 2)^2 - 4\} = -2(x - 2)^2 + 8$ となります。軸は直線 $x = 2$、頂点は $(2, 8)$ です。"
         }
       ]
+    },
+
+    // --- 類問セット ---
+    {
+      id: "set-quad-graph-basic-sim",
+      title: "【類問】2次関数のグラフ ($y = ax^2 + q$, $y = a(x-p)^2$)(全9問)",
+      isSimilar: true,
+      questions: [
+        {
+          type: "graph",
+          text: "1. 2点（頂点と通る他の1点）をタップして、$y = 2x^2$ の放物線を描きなさい。",
+          targetVertex: { x: 0, y: 0 },
+          targetA: 2,
+          explanation: "$y = 2x^2$ の頂点は $(0,0)$ です。$x=1$ のとき $y=2$ となるため、通るもう1つの点として $(1,2)$ などを指定して描画します。"
+        },
+        {
+          type: "graph",
+          text: "2. 2点（頂点と通る他の1点）をタップして、$y = x^2 - 3$ の放物線を描きなさい。",
+          targetVertex: { x: 0, y: -3 },
+          targetA: 1,
+          explanation: "$y = x^2 - 3$ の頂点は $(0,-3)$ です。$x=1$ のとき $y=-2$ となるため、通るもう1つの点として $(1,-2)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "3. 2点（頂点と通る他の1点）をタップして、$y = -x^2 + 4$ の放物線を描きなさい。",
+          targetVertex: { x: 0, y: 4 },
+          targetA: -1,
+          explanation: "$y = -x^2 + 4$ の頂点は $(0,4)$ です。$x=1$ のとき $y=3$ となるため、通るもう1つの点として $(1,3)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "4. 2点（頂点と通る他の1点）をタップして、$y = -2x^2 + 2$ の放物線を描きなさい。",
+          targetVertex: { x: 0, y: 2 },
+          targetA: -2,
+          explanation: "$y = -2x^2 + 2$ の頂点は $(0,2)$ です。$x=1$ のとき $y=0$ となるため、通るもう1つの点として $(1,0)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "5. 2点（頂点と通る他の1点）をタップして、$y = -x^2 - 2$ の放物線を描きなさい。",
+          targetVertex: { x: 0, y: -2 },
+          targetA: -1,
+          explanation: "$y = -x^2 - 2$ の頂点は $(0,-2)$ です。$x=1$ のとき $y=-3$ となるため、通るもう1つの点として $(1,-3)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "6. 2点（頂点と通る他の1点）をタップして、$y = (x + 2)^2$ の放物線を描きなさい。",
+          targetVertex: { x: -2, y: 0 },
+          targetA: 1,
+          explanation: "$y = (x + 2)^2$ の頂点は $(-2,0)$ です。$x=-1$ のとき $y=1$ となるため、通るもう1つの点として $(-1,1)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "7. 2点（頂点と通る他の1点）をタップして、$y = 2(x - 2)^2$ の放物線を描きなさい。",
+          targetVertex: { x: 2, y: 0 },
+          targetA: 2,
+          explanation: "$y = 2(x - 2)^2$ の頂点は $(2,0)$ です。$x=3$ のとき $y=2$ となるため、通るもう1つの点として $(3,2)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "8. 2点（頂点と通る他の1点）をタップして、$y = -(x - 1)^2$ の放物線を描きなさい。",
+          targetVertex: { x: 1, y: 0 },
+          targetA: -1,
+          explanation: "$y = -(x - 1)^2$ の頂点は $(1,0)$ です。$x=2$ のとき $y=-1$ となるため、通るもう1つの点として $(2,-1)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "9. 2点（頂点と通る他の1点）をタップして、$y = -(x + 3)^2$ の放物線を描きなさい。",
+          targetVertex: { x: -3, y: 0 },
+          targetA: -1,
+          explanation: "$y = -(x + 3)^2$ の頂点は $(-3,0)$ です。$x=-2$ のとき $y=-1$ となるため、通るもう1つの点として $(-2,-1)$ などを指定します。"
+        }
+      ]
+    },
+    {
+      id: "set-quad-graph-standard-sim",
+      title: "【類問】2次関数のグラフ ($y = a(x-p)^2 + q$)(全4問)",
+      isSimilar: true,
+      questions: [
+        {
+          type: "graph",
+          text: "1. 2点（頂点と通る他の1点）をタップして、$y = (x + 3)^2 - 2$ の放物線を描きなさい。",
+          targetVertex: { x: -3, y: -2 },
+          targetA: 1,
+          explanation: "$y = (x + 3)^2 - 2$ の頂点は $(-3,-2)$ です。$x=-2$ のとき $y=-1$ となるため、通るもう1つの点として $(-2,-1)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "2. 2点（頂点と通る他の1点）をタップして、$y = 2(x - 1)^2 - 3$ の放物線を描きなさい。",
+          targetVertex: { x: 1, y: -3 },
+          targetA: 2,
+          explanation: "$y = 2(x - 1)^2 - 3$ の頂点は $(1,-3)$ です。$x=2$ のとき $y=-1$ となるため、通るもう1つの点として $(2,-1)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "3. 2点（頂点と通る他の1点）をタップして、$y = -(x - 2)^2 + 4$ の放物線を描きなさい。",
+          targetVertex: { x: 2, y: 4 },
+          targetA: -1,
+          explanation: "$y = -(x - 2)^2 + 4$ の頂点は $(2,4)$ です。$x=3$ のとき $y=3$ となるため、通るもう1つの点として $(3,3)$ などを指定します。"
+        },
+        {
+          type: "graph",
+          text: "4. 2点（頂点と通る他の1点）をタップして、$y = -(x + 2)^2 + 1$ の放物線を描きなさい。",
+          targetVertex: { x: -2, y: 1 },
+          targetA: -1,
+          explanation: "$y = -(x + 2)^2 + 1$ の頂点は $(-2,1)$ です。$x=-1$ のとき $y=0$ となるため、通るもう1つの点として $(-1,0)$ などを指定します。"
+        }
+      ]
+    },
+    {
+      id: "set-quad-completion-basic-sim",
+      title: "【類問】平方完成の計算 (基本形)(全10問)",
+      isSimilar: true,
+      questions: [
+        {
+          type: "choice",
+          text: "1. 次の式を平方完成しなさい。<br>$x^2 - 6x$",
+          correct: "$(x - 3)^2 - 9$",
+          dummy: ["$(x - 3)^2 - 6$", "$(x - 6)^2 - 9$", "$(x - 3)^2 + 9$"],
+          explanation: "$x$ の係数 $-6$ の半分である $-3$ を使って、<br>$x^2 - 6x = (x - 3)^2 - 3^2 = (x - 3)^2 - 9$"
+        },
+        {
+          type: "choice",
+          text: "2. 次の式を平方完成しなさい。<br>$x^2 + 10x$",
+          correct: "$(x + 5)^2 - 25$",
+          dummy: ["$(x + 5)^2 - 10$", "$(x + 10)^2 - 25$", "$(x + 5)^2 + 25$"],
+          explanation: "$x$ の係数 $10$ の半分である $5$ を使って、<br>$x^2 + 10x = (x + 5)^2 - 5^2 = (x + 5)^2 - 25$"
+        },
+        {
+          type: "choice",
+          text: "3. 次の式を平方完成しなさい。<br>$x^2 - 2x - 5$",
+          correct: "$(x - 1)^2 - 6$",
+          dummy: ["$(x - 1)^2 - 5$", "$(x - 2)^2 - 6$", "$(x - 1)^2 - 4$"],
+          explanation: "$x^2 - 2x - 5 = (x - 1)^2 - 1^2 - 5 = (x - 1)^2 - 1 - 5 = (x - 1)^2 - 6$"
+        },
+        {
+          type: "choice",
+          text: "4. 次の式を平方完成しなさい。<br>$x^2 + 8x + 3$",
+          correct: "$(x + 4)^2 - 13$",
+          dummy: ["$(x + 4)^2 - 16$", "$(x + 4)^2 + 3$", "$(x + 8)^2 - 13$"],
+          explanation: "$x^2 + 8x + 3 = (x + 4)^2 - 4^2 + 3 = (x + 4)^2 - 16 + 3 = (x + 4)^2 - 13$"
+        },
+        {
+          type: "choice",
+          text: "5. 次の式を平方完成しなさい。<br>$x^2 - 4x + 1$",
+          correct: "$(x - 2)^2 - 3$",
+          dummy: ["$(x - 2)^2 - 4$", "$(x - 2)^2 + 1$", "$(x - 4)^2 - 3$"],
+          explanation: "$x^2 - 4x + 1 = (x - 2)^2 - 2^2 + 1 = (x - 2)^2 - 4 + 1 = (x - 2)^2 - 3$"
+        },
+        {
+          type: "choice",
+          text: "6. 次の式を平方完成しなさい。<br>$x^2 + 6x - 2$",
+          correct: "$(x + 3)^2 - 11$",
+          dummy: ["$(x + 3)^2 - 9$", "$(x + 3)^2 - 2$", "$(x + 6)^2 - 11$"],
+          explanation: "$x^2 + 6x - 2 = (x + 3)^2 - 3^2 - 2 = (x + 3)^2 - 9 - 2 = (x + 3)^2 - 11$"
+        },
+        {
+          type: "choice",
+          text: "7. 次の式を平方完成しなさい。<br>$2x^2 - 8x$",
+          correct: "$2(x - 2)^2 - 8$",
+          dummy: ["$2(x - 2)^2 - 4$", "$2(x - 4)^2 - 8$", "$2(x - 2)^2 + 8$"],
+          explanation: "$2x^2 - 8x = 2(x^2 - 4x) = 2\{(x - 2)^2 - 2^2\} = 2(x - 2)^2 - 8$"
+        },
+        {
+          type: "choice",
+          text: "8. 次の式を平方完成しなさい。<br>$3x^2 + 12x + 7$",
+          correct: "$3(x + 2)^2 - 5$",
+          dummy: ["$3(x + 2)^2 + 7$", "$3(x + 2)^2 - 12$", "$3(x + 4)^2 - 5$"],
+          explanation: "$3x^2 + 12x + 7 = 3(x^2 + 4x) + 7 = 3\{(x + 2)^2 - 4\} + 7 = 3(x + 2)^2 - 12 + 7 = 3(x + 2)^2 - 5$"
+        },
+        {
+          type: "choice",
+          text: "9. 次の式を平方完成しなさい。<br>$2x^2 - 4x + 5$",
+          correct: "$2(x - 1)^2 + 3$",
+          dummy: ["$2(x - 1)^2 + 5$", "$2(x - 1)^2 - 2$", "$2(x - 2)^2 + 3$"],
+          explanation: "$2x^2 - 4x + 5 = 2(x^2 - 2x) + 5 = 2\{(x - 1)^2 - 1\} + 5 = 2(x - 1)^2 - 2 + 5 = 2(x - 1)^2 + 3$"
+        },
+        {
+          type: "choice",
+          text: "10. 次の式を平方完成しなさい。<br>$4x^2 + 16x - 1$",
+          correct: "$4(x + 2)^2 - 17$",
+          dummy: ["$4(x + 2)^2 - 16$", "$4(x + 2)^2 - 1$", "$4(x + 4)^2 - 17$"],
+          explanation: "$4x^2 + 16x - 1 = 4(x^2 + 4x) - 1 = 4\{(x + 2)^2 - 4\} - 1 = 4(x + 2)^2 - 16 - 1 = 4(x + 2)^2 - 17$"
+        }
+      ]
+    },
+    {
+      id: "set-quad-completion-advanced-sim",
+      title: "【類問】平方完成とグラフ (マイナス係数含む)(全6問)",
+      isSimilar: true,
+      questions: [
+        {
+          type: "choice",
+          text: "1. 次の式を平方完成しなさい。<br>$-x^2 + 8x$",
+          correct: "$-(x - 4)^2 + 16$",
+          dummy: ["$-(x - 4)^2 - 16$", "$-(x + 4)^2 + 16$", "$-(x - 8)^2 + 16$"],
+          explanation: "$-x^2 + 8x = -(x^2 - 8x) = -\{(x - 4)^2 - 16\} = -(x - 4)^2 + 16$"
+        },
+        {
+          type: "choice",
+          text: "2. 次の式を平方完成しなさい。<br>$-x^2 + 4x + 3$",
+          correct: "$-(x - 2)^2 + 7$",
+          dummy: ["$-(x - 2)^2 + 3$", "$-(x - 2)^2 - 1$", "$-(x + 2)^2 + 7$"],
+          explanation: "$-x^2 + 4x + 3 = -(x^2 - 4x) + 3 = -\{(x - 2)^2 - 4\} + 3 = -(x - 2)^2 + 4 + 3 = -(x - 2)^2 + 7$"
+        },
+        {
+          type: "choice",
+          text: "3. 次の式を平方完成しなさい。<br>$-x^2 - 6x - 5$",
+          correct: "$-(x + 3)^2 + 4$",
+          dummy: ["$-(x + 3)^2 - 5$", "$-(x - 3)^2 + 4$", "$-(x + 3)^2 - 4$"],
+          explanation: "$-x^2 - 6x - 5 = -(x^2 + 6x) - 5 = -\{(x + 3)^2 - 9\} - 5 = -(x + 3)^2 + 9 - 5 = -(x + 3)^2 + 4$"
+        },
+        {
+          type: "choice",
+          text: "4. 次の式を平方完成しなさい。<br>$-2x^2 - 4x + 5$",
+          correct: "$-2(x + 1)^2 + 7$",
+          dummy: ["$-2(x + 1)^2 + 5$", "$-2(x + 1)^2 - 2$", "$-2(x - 1)^2 + 7$"],
+          explanation: "$-2x^2 - 4x + 5 = -2(x^2 + 2x) + 5 = -2\{(x + 1)^2 - 1\} + 5 = -2(x + 1)^2 + 2 + 5 = -2(x + 1)^2 + 7$"
+        },
+        {
+          type: "choice",
+          text: "5. $y = x^2 - 6x + 5$ を平方完成し、軸と頂点を求めなさい。",
+          correct: "$y = (x - 3)^2 - 4$<br>軸: $x = 3$<br>頂点: $(3, -4)$",
+          dummy: [
+            "$y = (x - 3)^2 + 5$<br>軸: $x = 3$<br>頂点: $(3, 5)$",
+            "$y = (x + 3)^2 - 4$<br>軸: $x = -3$<br>頂点: $(-3, -4)$",
+            "$y = (x - 3)^2 - 4$<br>軸: $x = -3$<br>頂点: $(-3, -4)$"
+          ],
+          explanation: "$y = x^2 - 6x + 5 = (x - 3)^2 - 9 + 5 = (x - 3)^2 - 4$ となります。軸は直線 $x = 3$、頂点は $(3, -4)$ です。"
+        },
+        {
+          type: "choice",
+          text: "6. $y = -2x^2 + 4x + 1$ を平方完成し、軸と頂点を求めなさい。",
+          correct: "$y = -2(x - 1)^2 + 3$<br>軸: $x = 1$<br>頂点: $(1, 3)$",
+          dummy: [
+            "$y = -2(x - 1)^2 + 1$<br>軸: $x = 1$<br>頂点: $(1, 1)$",
+            "$y = -2(x + 1)^2 + 3$<br>軸: $x = -1$<br>頂点: $(-1, 3)$",
+            "$y = -2(x - 1)^2 - 1$<br>軸: $x = 1$<br>頂点: $(1, -1)$"
+          ],
+          explanation: "$y = -2(x^2 - 2x) + 1 = -2\{(x - 1)^2 - 1\} + 1 = -2(x - 1)^2 + 2 + 1 = -2(x - 1)^2 + 3$ となります。軸は直線 $x = 1$、頂点は $(1, 3)$ です。"
+        }
+      ]
     }
   ];
 
@@ -975,12 +1250,14 @@
     document.getElementById("quiz-box").style.display = "none";
     document.getElementById("score-box").style.display = "none";
 
-    const container = document.getElementById("menu-list-container");
-    container.innerHTML = "";
+    const basicContainer = document.getElementById("menu-basic-container");
+    const similarContainer = document.getElementById("menu-similar-container");
+    basicContainer.innerHTML = "";
+    similarContainer.innerHTML = "";
 
     quizSets.forEach(set => {
       const card = document.createElement("div");
-      card.className = "menu-card";
+      card.className = set.isSimilar ? "menu-card similar-card" : "menu-card";
 
       const acc = getAccuracyRecord(set.id);
       const accText = acc !== null ? `正答率: ${acc}%` : "未回答";
@@ -995,7 +1272,12 @@
         </div>
       `;
       card.onclick = () => startQuiz(set.id);
-      container.appendChild(card);
+
+      if (set.isSimilar) {
+        similarContainer.appendChild(card);
+      } else {
+        basicContainer.appendChild(card);
+      }
     });
 
     renderMath();
@@ -1503,16 +1785,6 @@
       resizeMemoCanvas();
     }
   });
-
-  const preventCopyEvents = (e) => {
-    e.preventDefault();
-    return false;
-  };
-
-  document.addEventListener("copy", preventCopyEvents);
-  document.addEventListener("cut", preventCopyEvents);
-  document.addEventListener("contextmenu", preventCopyEvents);
-  document.addEventListener("selectstart", preventCopyEvents);
 
   populateSelectOptions(); 
 
