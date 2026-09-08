@@ -392,8 +392,63 @@
       display: inline-block;
       padding-bottom: 4px;
     }
+
+    /* 振り返りセクションのスタイル */
+    .reflection-box {
+      background: #f8f9fa;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: left;
+    }
+    .reflection-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .reflection-rating {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .btn-rating {
+      flex: 1;
+      padding: 10px 4px;
+      border: 2px solid #ced4da;
+      background: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      color: #495057;
+      transition: all 0.2s ease;
+    }
+    .btn-rating:hover {
+      border-color: #007bff;
+      background: #eef6ff;
+    }
+    .btn-rating.selected {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .reflection-textarea {
+      width: 100%;
+      height: 90px;
+      padding: 12px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      font-size: 15px;
+      resize: vertical;
+      font-family: inherit;
+    }
     
-    .send-status { font-size: 15px; margin-top: 15px; color: #007bff; font-weight: bold; }
+    .send-status { font-size: 15px; margin-top: 15px; color: #007bff; font-weight: bold; text-align: center; }
 
     .btn-primary {
       background-color: #007bff;
@@ -609,16 +664,36 @@
     </div>
   </div>
 
-  <!-- 3. 結果発表画面 -->
+  <!-- 3. 結果発表画面（振り返り機能追加） -->
   <div id="score-box" style="display: none;">
     <h2 style="color: #2c3e50; margin-top: 0;" id="score-title">🎉 全問終了 🎉</h2>
     <div id="score-text" style="font-size: 26px; font-weight: bold; color: #007bff; margin: 20px 0 10px 0;"></div>
     <div id="accuracy-text" style="font-size: 22px; font-weight: bold; color: #28a745; margin-bottom: 10px;"></div>
     <div id="details-text" style="font-size: 20px; font-weight: bold; color: #495057; margin-bottom: 20px; letter-spacing: 2px;"></div>
-    <div class="send-status" id="send-status">先生へデータを送信中...</div>
+
+    <!-- 振り返り入力エリア -->
+    <div class="reflection-box">
+      <div class="reflection-title">💭 学習の振り返り</div>
+      
+      <label style="font-size: 14px; font-weight: bold; color: #495057; display: block; margin-bottom: 8px;">1. 理解度を選んでください</label>
+      <div class="reflection-rating">
+        <button type="button" class="btn-rating" onclick="setRating(1, this)">1: 難しかった</button>
+        <button type="button" class="btn-rating" onclick="setRating(2, this)">2: 少し難しい</button>
+        <button type="button" class="btn-rating" onclick="setRating(3, this)">3: 普通</button>
+        <button type="button" class="btn-rating" onclick="setRating(4, this)">4: よく分かった</button>
+        <button type="button" class="btn-rating" onclick="setRating(5, this)">5: 完璧！</button>
+      </div>
+
+      <label for="reflection-comment" style="font-size: 14px; font-weight: bold; color: #495057; display: block; margin-bottom: 8px;">2. わかったこと・疑問点・感想などを自由に記入してください</label>
+      <textarea id="reflection-comment" class="reflection-textarea" placeholder="例：傾きと切片の意味がよくわかった。作図で点を取る順番に気をつけたい。"></textarea>
+    </div>
+
+    <button class="btn-primary" id="btn-submit-reflection" onclick="submitReflection()">💬 振り返りと結果を送信する</button>
+
+    <div class="send-status" id="send-status" style="display: none;"></div>
 
     <div style="margin-top: 24px; max-width: 500px; margin-left: auto; margin-right: auto;">
-      <button class="btn-primary" onclick="restartQuiz()">もう一度解く</button>
+      <button class="btn-secondary" onclick="restartQuiz()">もう一度解く</button>
       <button class="btn-secondary" onclick="showMenu()">メニュー画面に戻る</button>
     </div>
   </div>
@@ -626,7 +701,8 @@
 </div>
 
 <script>
-  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyGnkVZTzXDLqCpVtrBkc7Ygg_qFDfn2QYNhl7xztrAOrb3zTwitVRS7czGRm3O_EE/exec";
+  // 最新のWebアプリURLに更新済み
+  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbynNOCKC_63NGbmBU2jL7cJA7VrRPUN4xHH5c3ZVhOqdUfd20iQiyqfaPohqsSMbIah/exec";
 
   // 問題セット（基本と類問）
   const quizSets = [
@@ -778,9 +854,10 @@
   let userAnswers = []; 
   let userInfo = { grade: "", classNum: "", number: "", name: "" };
   let isMemoVisible = false;
+  let selectedRating = 0; // 振り返り評価値
 
   // グラフ作図用変数
-  let graphPoints = []; // [{x, y}, {x, y}]
+  let graphPoints = [];
   let currentGraphQuestion = null;
 
   function populateSelectOptions() {
@@ -980,7 +1057,7 @@
   }
 
   /* --- グラフ作図関連モジュール --- */
-  const gridRange = 6; // -6 〜 6
+  const gridRange = 6;
   let gCanvas, gCtx;
 
   function initGraphCanvas() {
@@ -988,7 +1065,6 @@
     gCtx = gCanvas.getContext("2d");
     resetGraphSelection();
 
-    // タップイベント設定
     gCanvas.onclick = handleGraphClick;
   }
 
@@ -1006,7 +1082,6 @@
 
     gCtx.clearRect(0, 0, w, h);
 
-    // グリッド線
     gCtx.strokeStyle = "#e0e0e0";
     gCtx.lineWidth = 1;
     for (let i = 0; i <= gridRange * 2; i++) {
@@ -1021,26 +1096,22 @@
       gCtx.stroke();
     }
 
-    // 軸 (x, y)
     const originX = w / 2;
     const originY = h / 2;
 
     gCtx.strokeStyle = "#333333";
     gCtx.lineWidth = 2;
 
-    // x軸
     gCtx.beginPath();
     gCtx.moveTo(0, originY);
     gCtx.lineTo(w, originY);
     gCtx.stroke();
 
-    // y軸
     gCtx.beginPath();
     gCtx.moveTo(originX, 0);
     gCtx.lineTo(originX, h);
     gCtx.stroke();
 
-    // 目盛りラベル
     gCtx.fillStyle = "#333";
     gCtx.font = "12px sans-serif";
     gCtx.textAlign = "center";
@@ -1054,18 +1125,16 @@
     gCtx.fillText("1", originX - 4, originY - step);
     gCtx.fillText("-1", originX - 4, originY + step);
 
-    // 点の描画
     graphPoints.forEach((p, idx) => {
       const cx = originX + p.x * step;
       const cy = originY - p.y * step;
 
-      gCtx.fillStyle = idx === 0 ? "#dc3545" : "#007bff"; // 1点目:赤(切片), 2点目:青
+      gCtx.fillStyle = idx === 0 ? "#dc3545" : "#007bff";
       gCtx.beginPath();
       gCtx.arc(cx, cy, 6, 0, Math.PI * 2);
       gCtx.fill();
     });
 
-    // 直線の描画（2点決定時）
     if (graphPoints.length === 2) {
       const p1 = graphPoints[0];
       const p2 = graphPoints[1];
@@ -1203,6 +1272,12 @@
     }
   }
 
+  function setRating(val, btn) {
+    selectedRating = val;
+    document.querySelectorAll(".btn-rating").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+  }
+
   function showScore() {
     document.getElementById("quiz-box").style.display = "none";
     document.getElementById("score-box").style.display = "block";
@@ -1219,19 +1294,49 @@
     document.getElementById("accuracy-text").textContent = `正答率: ${accuracyRate}%`;
     document.getElementById("details-text").textContent = `結果: ${answerDetailsStr}`;
 
-    sendDataToTeacher(currentSet.id, currentSet.title, score, total, accuracyRate, answerDetailsStr);
+    // 振り返りの初期化
+    selectedRating = 0;
+    document.querySelectorAll(".btn-rating").forEach(b => b.classList.remove("selected"));
+    document.getElementById("reflection-comment").value = "";
+    document.getElementById("btn-submit-reflection").disabled = false;
+    document.getElementById("btn-submit-reflection").style.backgroundColor = "#007bff";
+    
+    const statusEl = document.getElementById("send-status");
+    statusEl.style.display = "none";
+    statusEl.textContent = "";
+
     renderMath();
   }
 
-  function sendDataToTeacher(setId, setTitle, score, total, accuracy, details) {
+  function submitReflection() {
+    const comment = document.getElementById("reflection-comment").value.trim();
+    
+    if (selectedRating === 0) {
+      alert("振り返りの「理解度」を選択してください。");
+      return;
+    }
+
+    const total = currentQuestions.length;
+    const accuracyRate = Math.round((score / total) * 100);
+    let answerDetailsStr = userAnswers.map(a => a.isCorrect ? "○" : "×").join("");
+
+    sendDataToTeacher(currentSet.id, currentSet.title, score, total, accuracyRate, answerDetailsStr, selectedRating, comment);
+  }
+
+  function sendDataToTeacher(setId, setTitle, score, total, accuracy, details, rating, comment) {
     const statusEl = document.getElementById("send-status");
+    const submitBtn = document.getElementById("btn-submit-reflection");
+
+    statusEl.style.display = "block";
 
     if (!GAS_WEBAPP_URL) {
       statusEl.textContent = "※送信先URL未設定（ローカル記録のみ完了）";
       return;
     }
 
-    statusEl.textContent = "先生へデータを送信中...";
+    statusEl.textContent = "先生へデータ送信中...";
+    statusEl.style.color = "#007bff";
+    submitBtn.disabled = true;
 
     const payload = {
       grade: parseInt(userInfo.grade, 10),
@@ -1243,7 +1348,9 @@
       score: score,
       total: total,
       accuracy: accuracy,
-      details: details
+      details: details,
+      rating: rating,
+      comment: comment
     };
 
     fetch(GAS_WEBAPP_URL, {
@@ -1253,13 +1360,15 @@
       body: JSON.stringify(payload)
     })
     .then(() => {
-      statusEl.textContent = "✅ 先生へ学習記録を正常に送信しました！";
+      statusEl.textContent = "✅ 振り返りと学習記録を先生へ送信しました！";
       statusEl.style.color = "#28a745";
+      submitBtn.style.backgroundColor = "#6c757d";
     })
     .catch(err => {
       console.error(err);
       statusEl.textContent = "⚠️ 送信に失敗しました（ネットワークエラー）";
       statusEl.style.color = "#dc3545";
+      submitBtn.disabled = false;
     });
   }
 
