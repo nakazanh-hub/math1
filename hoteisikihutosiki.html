@@ -389,6 +389,73 @@
     }
     .btn-danger:hover { background-color: #c82333; }
 
+    /* 振り返り用スタイル */
+    .reflection-box {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+      text-align: left;
+    }
+    .reflection-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .reflection-label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #495057;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .understanding-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 600px) {
+      .understanding-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .btn-understanding {
+      background: white;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      padding: 10px 4px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-understanding:hover {
+      border-color: #007bff;
+      background: #eef6ff;
+    }
+    .btn-understanding.selected {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .reflection-textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      font-size: 14px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
     .memo-header {
       padding: 10px 16px;
       background: #2c3e50;
@@ -544,18 +611,36 @@
     <div id="score-text" style="font-size: 26px; font-weight: bold; color: #007bff; margin: 20px 0 10px 0;"></div>
     <div id="accuracy-text" style="font-size: 22px; font-weight: bold; color: #28a745; margin-bottom: 10px;"></div>
     <div id="details-text" style="font-size: 20px; font-weight: bold; color: #495057; margin-bottom: 20px; letter-spacing: 2px;"></div>
-    <div class="send-status" id="send-status">先生へデータを送信中...</div>
+
+    <!-- 振り返りセクション -->
+    <div class="reflection-box">
+      <div class="reflection-title">💭 学習の振り返り</div>
+      <label class="reflection-label">1. 理解度を選んでください</label>
+      <div class="understanding-grid">
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(1, this)">1: 難しかった</button>
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(2, this)">2: 少し難しい</button>
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(3, this)">3: 普通</button>
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(4, this)">4: よく分かった</button>
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(5, this)">5: 完璧！</button>
+      </div>
+
+      <label class="reflection-label">2. わかったこと・疑問点・感想などを自由に記入してください</label>
+      <textarea id="reflection-comment" class="reflection-textarea" placeholder="例：移項する時の符号の変化に気をつけたい。"></textarea>
+    </div>
+
+    <button class="btn-primary" id="send-btn" onclick="submitReflectionAndData()">💭 振り返りと結果を送信する</button>
+    <div class="send-status" id="send-status" style="display: none;"></div>
 
     <div style="margin-top: 24px; max-width: 500px; margin-left: auto; margin-right: auto;">
-      <button class="btn-primary" onclick="restartQuiz()">もう一度解く</button>
-      <button class="btn-secondary" onclick="showMenu()">メニュー画面に戻る</button>
+      <button class="btn-secondary" onclick="restartQuiz()">もう一度解く</button>
+      <button class="btn-secondary" onclick="showMenu()" style="margin-top: 8px;">メニュー画面に戻る</button>
     </div>
   </div>
 
 </div>
 
 <script>
-  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyGnkVZTzXDLqCpVtrBkc7Ygg_qFDfn2QYNhl7xztrAOrb3zTwitVRS7czGRm3O_EE/exec";
+  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbynNOCKC_63NGbmBU2jL7cJA7VrRPUN4xHH5c3ZVhOqdUfd20iQiyqfaPohqsSMbIah/exec";
 
   const quizSets = [
     // --- 通常問題セット ---
@@ -686,7 +771,6 @@
       title: "1次不等式の計算(全14問)",
       isSimilar: false,
       questions: [
-        // 9の(1)〜(4) -> (1)〜(4)
         {
           text: "次の1次不等式を解きなさい。<br>$(1)\\quad x - 3 < 5$",
           correct: "$x < 8$",
@@ -711,7 +795,6 @@
           dummy: ["$x < -3$", "$x > -5$", "$x < 5$"],
           explanation: "$+1$ を右辺に移項すると、<br>$x < -4 - 1$<br>$x < -5$"
         },
-        // 10の(1)〜(4) -> (1)〜(4)
         {
           text: "次の1次不等式を解きなさい。<br>$(1)\\quad 2x < 8$",
           correct: "$x < 4$",
@@ -736,7 +819,6 @@
           dummy: ["$x \\leqq 3$", "$x \\geqq -3$", "$x \\leqq -3$"],
           explanation: "両辺を負の数 $-4$ で割ると、**不等号の向きが変わります**。<br>$x \\geqq 3$"
         },
-        // 11の(1)〜(6) -> (1)〜(6)
         {
           text: "次の1次不等式を解きなさい。<br>$(1)\\quad 2x - 5 > 9$",
           correct: "$x > 7$",
@@ -780,14 +862,12 @@
       title: "連立不等式・利用(全2問)",
       isSimilar: false,
       questions: [
-        // 12
         {
           text: "次の連立不等式を解きなさい。<br>$$\\begin{cases} x - 3 \\leqq 5 \\quad \\dots ① \\\\ 2x - 1 < 3x \\quad \\dots ② \\end{cases}$$",
           correct: "$-1 < x \\leqq 8$",
           dummy: ["$x \\leqq 8$", "$x > -1$", "$-1 \\leqq x < 8$"],
           explanation: "①より、$x \\leqq 8$<br>②より、$2x - 3x < 1$ $\\Rightarrow$ $-x < 1$ $\\Rightarrow$ $x > -1$<br>共通範囲を求めると、$-1 < x \\leqq 8$ となります。"
         },
-        // 13
         {
           text: "2000円以下で，1個150円のドーナツを何個かと1本200円のジュース2本を買いたい。このとき，ドーナツは何個まで買うことができるでしょうか。",
           correct: "10個まで",
@@ -925,7 +1005,6 @@
       title: "【類問】1次不等式の計算(全14問)",
       isSimilar: true,
       questions: [
-        // 類問 (1)〜(4)
         {
           text: "【類問】次の1次不等式を解きなさい。<br>$(1)\\quad x - 4 < 2$",
           correct: "$x < 6$",
@@ -950,7 +1029,6 @@
           dummy: ["$x < 3$", "$x > -5$", "$x < -3$"],
           explanation: "$+4$ を右辺に移項すると、$x < -1 - 4$ より $x < -5$"
         },
-        // 類問 (1)〜(4)
         {
           text: "【類問】次の1次不等式を解きなさい。<br>$(1)\\quad 4x < 12$",
           correct: "$x < 3$",
@@ -975,7 +1053,6 @@
           dummy: ["$x \\leqq 5$", "$x \\geqq -5$", "$x \\leqq -5$"],
           explanation: "両辺を負の数 $-2$ で割ると不等号の向きが変わり $x \\geqq 5$"
         },
-        // 類問 (1)〜(6)
         {
           text: "【類問】次の1次不等式を解きなさい。<br>$(1)\\quad 3x - 4 > 11$",
           correct: "$x > 5$",
@@ -1019,14 +1096,12 @@
       title: "【類問】連立不等式・利用(全2問)",
       isSimilar: true,
       questions: [
-        // 類問
         {
           text: "【類問】次の連立不等式を解きなさい。<br>$$\\begin{cases} x - 2 \\leqq 4 \\quad \\dots ① \\\\ 3x - 2 < 4x \\quad \\dots ② \\end{cases}$$",
           correct: "$-2 < x \\leqq 6$",
           dummy: ["$x \\leqq 6$", "$x > -2$", "$-2 \\leqq x < 6$"],
           explanation: "①より $x \\leqq 6$<br>②より $3x - 4x < 2 \\Rightarrow -x < 2 \\Rightarrow x > -2$<br>共通範囲を求めると、$-2 < x \\leqq 6$ となります。"
         },
-        // 類問
         {
           text: "【類問】1500円以下で，1個120円のパンを何個かと1本180円のジュース2本を買いたい。このとき，パンは何個まで買うことができるでしょうか。",
           correct: "9個まで",
@@ -1044,6 +1119,7 @@
   let userAnswers = []; 
   let userInfo = { grade: "", classNum: "", number: "", name: "" };
   let isMemoVisible = false;
+  let selectedUnderstanding = null;
 
   function populateSelectOptions() {
     const gradeSelect = document.getElementById("input-grade");
@@ -1286,12 +1362,50 @@
     document.getElementById("accuracy-text").textContent = `正答率: ${accuracyRate}%`;
     document.getElementById("details-text").textContent = `結果: ${answerDetailsStr}`;
 
-    sendDataToTeacher(currentSet.id, currentSet.title, score, total, accuracyRate, answerDetailsStr);
+    // リセット
+    selectedUnderstanding = null;
+    document.querySelectorAll(".btn-understanding").forEach(btn => btn.classList.remove("selected"));
+    document.getElementById("reflection-comment").value = "";
+    document.getElementById("send-status").style.display = "none";
+    document.getElementById("send-btn").disabled = false;
+
     renderMath();
   }
 
-  function sendDataToTeacher(setId, setTitle, score, total, accuracy, details) {
+  function selectUnderstanding(level, btn) {
+    selectedUnderstanding = level;
+    document.querySelectorAll(".btn-understanding").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+  }
+
+  function submitReflectionAndData() {
+    if (!selectedUnderstanding) {
+      alert("理解度（1〜5）を選択してください。");
+      return;
+    }
+
+    const comment = document.getElementById("reflection-comment").value.trim();
+    const total = currentQuestions.length;
+    const accuracyRate = Math.round((score / total) * 100);
+    let answerDetailsStr = userAnswers.map(a => a.isCorrect ? "○" : "×").join("");
+
+    sendDataToTeacher(
+      currentSet.id,
+      currentSet.title,
+      score,
+      total,
+      accuracyRate,
+      answerDetailsStr,
+      selectedUnderstanding,
+      comment
+    );
+  }
+
+  function sendDataToTeacher(setId, setTitle, score, total, accuracy, details, understanding, comment) {
     const statusEl = document.getElementById("send-status");
+    const sendBtn = document.getElementById("send-btn");
+
+    statusEl.style.display = "block";
 
     if (!GAS_WEBAPP_URL) {
       statusEl.textContent = "※送信先URL未設定（ローカル記録のみ完了）";
@@ -1299,6 +1413,8 @@
     }
 
     statusEl.textContent = "先生へデータを送信中...";
+    statusEl.style.color = "#007bff";
+    sendBtn.disabled = true;
 
     const payload = {
       grade: parseInt(userInfo.grade, 10),
@@ -1310,7 +1426,9 @@
       score: score,
       total: total,
       accuracy: accuracy,
-      details: details
+      details: details,
+      understanding: understanding,
+      comment: comment
     };
 
     fetch(GAS_WEBAPP_URL, {
@@ -1327,6 +1445,7 @@
       console.error(err);
       statusEl.textContent = "⚠️ 送信に失敗しました（ネットワークエラー）";
       statusEl.style.color = "#dc3545";
+      sendBtn.disabled = false;
     });
   }
 
