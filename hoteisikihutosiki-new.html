@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>方程式・不等式 学習アプリ</title>
+  <!-- MathJax JS for Math Rendering -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      background-color: #f4f7f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .quiz-container {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      width: 95%;
+      max-width: 1200px;
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      transition: all 0.3s ease;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    .quiz-container.split-layout {
+      max-width: 98vw;
+      width: 98vw;
+      padding: 20px;
+      min-height: auto;
+      height: auto;
+      justify-content: flex-start;
+      overflow-y: auto;
+    }
+
+    .split-wrapper {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      width: 100%;
+      height: 100%;
+      text-align: left;
+    }
+
+    .split-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .split-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 2px solid #ced4da;
+      border-radius: 12px;
+      overflow: hidden;
+      min-width: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    @media (max-width: 1024px) {
+      body {
+        padding: 10px;
+        align-items: flex-start;
+      }
+      .quiz-container {
+        padding: 20px;
+        min-height: auto;
+      }
+      .quiz-container.split-layout {
+        max-width: 100%;
+        width: 100%;
+        padding: 15px;
+      }
+      .split-wrapper {
+        flex-direction: column;
+      }
+      .split-right {
+        height: 380px;
+        flex-shrink: 0;
+      }
+    }
+
+    .app-title { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 12px; }
+    .app-subtitle { font-size: 18px; color: #6c757d; margin-bottom: 28px; }
+
+    .user-info-form { display: flex; flex-direction: column; gap: 18px; text-align: left; max-width: 600px; margin: 0 auto; width: 100%; }
+    .form-group-inline { display: flex; gap: 12px; }
+    .form-group-inline > div { flex: 1; }
+    .user-info-form label { font-size: 15px; font-weight: bold; color: #495057; display: block; margin-bottom: 6px; }
+    .user-info-form input, .user-info-form select { 
+      width: 100%; 
+      padding: 12px 14px; 
+      border: 1px solid #ced4da; 
+      border-radius: 8px; 
+      font-size: 18px; 
+      background-color: #fff;
+    }
+
+    .user-display-bar {
+      background-color: #eef6ff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #007bff;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-edit-user { background: none; border: none; color: #6c757d; font-size: 14px; cursor: pointer; text-decoration: underline; }
+
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .menu-card {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px 24px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .menu-card:hover {
+      background: #eef6ff;
+      border-color: #007bff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+    }
+
+    .menu-card.similar-card {
+      background: #fffcf8;
+      border-color: #ffe8cc;
+      border-left: 6px solid #fd7e14;
+    }
+    .menu-card.similar-card:hover {
+      background: #fff4e6;
+      border-color: #fd7e14;
+      box-shadow: 0 4px 12px rgba(253, 126, 20, 0.15);
+    }
+    .menu-card.similar-card .menu-card-badge {
+      background: #fd7e14;
+    }
+
+    .menu-card-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .menu-card-stats { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .menu-card-badge {
+      background: #007bff;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+      padding: 4px 12px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+    .menu-card-accuracy { font-size: 15px; font-weight: bold; color: #28a745; }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header-controls {
+      display: flex;
+      gap: 10px;
+    }
+    .question-number {
+      font-size: 18px;
+      color: #6c757d;
+      font-weight: 600;
+    }
+    .btn-small-menu {
+      background: #e9ecef;
+      color: #495057;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-small-menu:hover { background: #dee2e6; }
+    
+    .btn-memo {
+      background: #17a2b8;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .btn-memo:hover { background: #138496; }
+    .btn-memo.active { background: #e0a800; color: #212529; }
+
+    .question-title {
+      display: block !important;
+      text-align: left !important;
+      font-size: 22px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 24px;
+      line-height: 1.8;
+      word-break: break-word;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .btn-option {
+      background-color: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
+      line-height: 1.4;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    .btn-option:hover:not(:disabled) {
+      background-color: #e9ecef;
+      border-color: #4a90e2;
+    }
+    .btn-option:disabled {
+      cursor: default;
+      opacity: 0.85;
+    }
+    
+    .btn-option.correct-choice {
+      background-color: #d4edda !important;
+      border-color: #c3e6cb !important;
+      color: #155724 !important;
+    }
+    .btn-option.wrong-choice {
+      background-color: #f8d7da !important;
+      border-color: #f5c6cb !important;
+      color: #721c24 !important;
+    }
+
+    .result-section {
+      margin-top: 16px;
+      display: none;
+      text-align: left;
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    .result-header {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .correct { color: #28a745; }
+    .incorrect { color: #dc3545; }
+    
+    .explanation-box {
+      font-size: 16px;
+      color: #495057;
+      line-height: 1.8;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    .explanation-title {
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 8px;
+      border-bottom: 2px solid #007bff;
+      display: inline-block;
+      padding-bottom: 4px;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      display: block;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .btn-primary:hover { background-color: #0056b3; }
+    
+    .btn-secondary {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      display: block;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .btn-secondary:hover { background-color: #0056b3; }
+
+    .btn-danger {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      display: block;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+    .btn-danger:hover { background-color: #c82333; }
+
+    .btn-game {
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      width: 100%;
+      margin-top: 12px;
+    }
+    .btn-game:hover { background-color: #e68a00; }
+
+    /* 振り返り用スタイル */
+    .reflection-box {
+      background-color: #f8f9fa;
+      border: 2px solid #007bff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+      text-align: left;
+    }
+    .reflection-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .reflection-label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #495057;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .required-tag {
+      background-color: #dc3545;
+      color: white;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .understanding-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 600px) {
+      .understanding-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .btn-understanding {
+      background: white;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      padding: 10px 4px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-understanding:hover {
+      border-color: #007bff;
+      background: #eef6ff;
+    }
+    .btn-understanding.selected {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .reflection-textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      font-size: 14px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .memo-header {
+      padding: 10px 16px;
+      background: #2c3e50;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .memo-title { font-weight: bold; font-size: 16px; }
+    .memo-toolbar {
+      padding: 8px;
+      background: #f1f3f5;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .memo-toolbar button, .memo-toolbar select, .memo-toolbar input {
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #ced4da;
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .memo-toolbar button.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .memo-canvas-wrapper {
+      flex: 1;
+      position: relative;
+      background: #fdfdfd;
+      background-image: linear-gradient(#e5e5e5 1px, transparent 1px), linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+      background-size: 20px 20px;
+      touch-action: none;
+      min-height: 250px;
+    }
+    canvas#memo-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      cursor: crosshair; 
+    }
+  </style>
+</head>
+<body>
+
+<div class="quiz-container" id="main-container">
+  
+  <!-- 0. ユーザー情報入力画面 -->
+  <div id="user-info-box">
+    <div class="app-title">📝 初期設定</div>
+    <div class="app-subtitle">学習を開始する前に名前を入力してください</div>
+    
+    <form class="user-info-form" onsubmit="saveUserInfo(event)">
+      <div class="form-group-inline">
+        <div>
+          <label for="input-grade">年</label>
+          <select id="input-grade" required>
+            <option value="">選択</option>
+          </select>
+        </div>
+        <div>
+          <label for="input-class">組</label>
+          <select id="input-class" required>
+            <option value="">選択</option>
+          </select>
+        </div>
+        <div>
+          <label for="input-number">番号</label>
+          <select id="input-number" required>
+            <option value="">選択</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label for="input-name">氏名</label>
+        <input type="text" id="input-name" placeholder="山田 太郎" required>
+      </div>
+      <button type="submit" class="btn-primary">学習を開始する</button>
+      <button type="button" class="btn-danger" onclick="resetAllData()">🔄 ユーザー情報・全解答履歴をリセット</button>
+    </form>
+  </div>
+
+  <!-- 1. メニュー画面 -->
+  <div id="menu-box" style="display: none;">
+    <div class="user-display-bar">
+      <span id="user-display-text"></span>
+      <button class="btn-edit-user" onclick="showUserInfoForm()">設定変更</button>
+    </div>
+    <div class="app-title">📐 方程式・不等式トレーニング</div>
+    <div class="app-subtitle">挑戦したい問題セットを選択してください</div>
+    <div class="menu-list" id="menu-list-container"></div>
+  </div>
+
+  <!-- 2. クイズ画面 -->
+  <div id="quiz-box" style="display: none;">
+    <div class="quiz-header">
+      <div class="question-number" id="q-num">第 1 問</div>
+      <div class="header-controls">
+        <button class="btn-memo" id="memo-toggle-btn" onclick="toggleMemoLayout()">✏️ 計算メモを表示</button>
+        <button class="btn-small-menu" onclick="showMenu()">メニューに戻る</button>
+      </div>
+    </div>
+
+    <div class="split-wrapper">
+      <div class="split-left">
+        <div class="question-title" id="q-title">問題の読み込み中...</div>
+        <div class="options-grid" id="options-container"></div>
+        
+        <div class="result-section" id="result-section">
+          <div class="result-header" id="result-text"></div>
+          <div class="explanation-box">
+            <div class="explanation-title">解説</div>
+            <div id="explanation-text"></div>
+          </div>
+          <button class="btn-primary" id="next-btn" onclick="nextQuestion()">次の問題へ</button>
+        </div>
+      </div>
+
+      <div class="split-right" id="memo-panel" style="display: none;">
+        <div class="memo-header">
+          <span class="memo-title">✏️ 計算スペース</span>
+        </div>
+        <div class="memo-toolbar">
+          <button id="tool-pen" class="active" onclick="setMemoMode('pen')">🖊️ ペン</button>
+          <button id="tool-eraser" onclick="setMemoMode('eraser')">🧹 消しゴム</button>
+          <label style="font-size: 12px;">色:
+            <input type="color" id="memo-color" value="#000000" onchange="updateMemoStyle()">
+          </label>
+          <label style="font-size: 12px;">太さ:
+            <select id="memo-size" onchange="updateMemoStyle()">
+              <option value="2">細い</option>
+              <option value="4" selected>普通</option>
+              <option value="8">太い</option>
+            </select>
+          </label>
+          <button onclick="clearMemoCanvas()" style="margin-left: auto; background-color: #f8d7da; color: #721c24;">🗑️ 全消去</button>
+        </div>
+        <div class="memo-canvas-wrapper" id="memo-canvas-wrapper">
+          <canvas id="memo-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 結果発表画面 -->
+  <div id="score-box" style="display: none;">
+    <h2 style="color: #2c3e50; margin-top: 0;" id="score-title">🎉 全問終了 🎉</h2>
+    <div id="score-text" style="font-size: 26px; font-weight: bold; color: #007bff; margin: 20px 0 10px 0;"></div>
+    <div id="accuracy-text" style="font-size: 22px; font-weight: bold; color: #28a745; margin-bottom: 10px;"></div>
+    <div id="details-text" style="font-size: 20px; font-weight: bold; color: #495057; margin-bottom: 20px; letter-spacing: 2px;"></div>
+
+    <!-- 振り返りセクション（必須入力） -->
+    <div class="reflection-box">
+      <div class="reflection-title">💭 学習の振り返り（※入力必須）</div>
+      
+      <label class="reflection-label">
+        1. 理解度を選んでください <span class="required-tag">必須</span>
+      </label>
+      <div class="understanding-grid">
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(1, this)">1: 難しかった</button>
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(2, this)">2: 少し難しい</button>
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(3, this)">3: 普通</button>
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(4, this)">4: よく分かった</button>
+        <button type="button" class="btn-understanding" onclick="selectUnderstanding(5, this)">5: 完璧！</button>
+      </div>
+
+      <label class="reflection-label">
+        2. わかったこと・疑問点・感想などを記入してください <span class="required-tag">必須</span>
+      </label>
+      <textarea id="reflection-comment" class="reflection-textarea" placeholder="例：移項する時の符号の変化に気をつけたい。"></textarea>
+    </div>
+
+    <!-- アクションボタンエリア -->
+    <div style="margin-top: 24px; max-width: 500px; margin-left: auto; margin-right: auto;">
+      <!-- 類問全問正解時のみ表示されるミニゲーム導線ボタン -->
+      <button class="btn-game" id="btn-goto-minigame" style="display: none;" onclick="finishAndGoToMinigame()">⚡ 振り返りを送信してミニゲームに挑戦！</button>
+      
+      <button class="btn-secondary" onclick="finishAndRestart()">もう一度解く</button>
+      <button class="btn-secondary" onclick="finishAndShowMenu()" style="margin-top: 8px;">メニュー画面に戻る</button>
+    </div>
+  </div>
+
+  <!-- 4. ミニゲーム：スピード計算タイムアタック -->
+  <div id="game-speed-box" style="display: none; max-width: 600px; margin: 0 auto; width: 100%;">
+    <div class="app-title">⚡ スピード計算タイムアタック</div>
+    <div class="app-subtitle">全5問！なるべく早く暗算で解こう！</div>
+
+    <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #495057;">
+      <span id="speed-q-num">第 1 / 5 問</span>
+      <span id="speed-timer" style="color: #dc3545;">0.00 秒</span>
+    </div>
+
+    <div id="speed-q-text" style="font-size: 36px; font-weight: bold; color: #2c3e50; margin: 30px 0;"></div>
+
+    <div id="speed-options-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;"></div>
+
+    <button class="btn-secondary" onclick="confirmFinishMinigame()">ゲームを終了</button>
+  </div>
+
+</div>
+
+<script>
+  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz_N58qC0ZRkM9VaZj0eSOUGPnvR35sgw2igvIw2b2dQ_4OS5fO5fjoVVtoLOSWy40L/exec";
+
+  const quizSets = [
+    // --- 通常問題セット ---
+    {
+      id: "set-equation",
+      title: "【問題1】1次方程式 基本問題(全6問)",
+      isSimilar: false,
+      questions: [
+        {
+          text: "次の1次方程式を解きなさい。<br>$(1)\\quad x - 2 = 3$",
+          correct: "$x = 5$",
+          dummy: ["$x = 1$", "$x = -1$", "$x = -5$"],
+          explanation: "$-2$ を右辺に移項すると、<br>$x = 3 + 2$<br>$x = 5$"
+        },
+        {
+          text: "次の1次方程式を解きなさい。<br>$(2)\\quad 2x - 5 = 1$",
+          correct: "$x = 3$",
+          dummy: ["$x = 2$", "$x = 6$", "$x = -2$"],
+          explanation: "$-5$ を右辺に移項します。<br>$2x = 1 + 5$<br>$2x = 6$<br>両辺を $2$ で割って、$x = 3$"
+        },
+        {
+          text: "次の1次方程式を解きなさい。<br>$(3)\\quad 3x + 5 = 0$",
+          correct: "$x = -\\frac{5}{3}$",
+          dummy: ["$x = \\frac{5}{3}$", "$x = -\\frac{3}{5}$", "$x = -2$"],
+          explanation: "$+5$ を右辺に移項します。<br>$3x = -5$<br>両辺を $3$ で割って、$x = -\\frac{5}{3}$"
+        },
+        {
+          text: "次の1次方程式を解きなさい。<br>$(4)\\quad 5x + 5 = 7x - 3$",
+          correct: "$x = 4$",
+          dummy: ["$x = -4$", "$x = 1$", "$x = -1$"],
+          explanation: "文字の項を左辺に、数の項を右辺に移項します。<br>$5x - 7x = -3 - 5$<br>$-2x = -8$<br>両辺を $-2$ で割って、$x = 4$"
+        },
+        {
+          text: "次の1次方程式を解きなさい。<br>$(5)\\quad 4x + 1 = -x - 4$",
+          correct: "$x = -1$",
+          dummy: ["$x = 1$", "$x = -3$", "$x = -5$"],
+          explanation: "移項して整理します。<br>$4x + x = -4 - 1$<br>$5x = -5$<br>両辺を $5$ で割って、$x = -1$"
+        },
+        {
+          text: "次の1次方程式を解きなさい。<br>$(6)\\quad 3x - 1 = 2x + 6$",
+          correct: "$x = 7$",
+          dummy: ["$x = 5$", "$x = -7$", "$x = 1$"],
+          explanation: "移項して整理します。<br>$3x - 2x = 6 + 1$<br>$x = 7$"
+        }
+      ]
+    },
+    {
+      id: "set-inequality",
+      title: "【問題2】1次不等式 基本概念問題(全12問)",
+      isSimilar: false,
+      questions: [
+        {
+          text: "次の空らんに，不等号 $<$ または $>$ を入れなさい。<br>$(1)\\quad 2 \\;\\square\\; 4$",
+          correct: "$<$",
+          dummy: ["$>$"],
+          explanation: "数直線上で $2$ は $4$ より左側にあるので、 $2 < 4$ です。"
+        },
+        {
+          text: "次の空らんに，不等号 $<$ または $>$ を入れなさい。<br>$(2)\\quad 3 \\;\\square\\; -1$",
+          correct: "$>$",
+          dummy: ["$<$"],
+          explanation: "正の数 $3$ は負の数 $-1$ より大きいので、 $3 > -1$ です。"
+        },
+        {
+          text: "次の空らんに，不等号 $<$ または $>$ を入れなさい。<br>$(3)\\quad -2 \\;\\square\\; -3$",
+          correct: "$>$",
+          dummy: ["$<$"],
+          explanation: "負の数では、絶対値が小さい方が大きくなります。数直線上で $-2$ は $-3$ の右側にあるので、 $-2 > -3$ です。"
+        },
+        {
+          text: "次の空らんに，不等号 $<$ または $>$ を入れなさい。<br>$(4)\\quad 0 \\;\\square\\; 1$",
+          correct: "$<$",
+          dummy: ["$>$"],
+          explanation: "$0$ は正の数 $1$ より小さいので、 $0 < 1$ です。"
+        },
+        {
+          text: "次の文を不等式で表しなさい。<br>$(1)\\quad x \\text{ は } 3 \\text{ より大きい。}$",
+          correct: "$x > 3$",
+          dummy: ["$x \\geqq 3$", "$x < 3$", "$x \\leqq 3$"],
+          explanation: "「より大きい」はその数を含まないので $>$ を用いて、$x > 3$ と表します。"
+        },
+        {
+          text: "次の文を不等式で表しなさい。<br>$(2)\\quad x \\text{ は } 7 \\text{ 以下である。}$",
+          correct: "$x \\leqq 7$",
+          dummy: ["$x < 7$", "$x \\geqq 7$", "$x > 7$"],
+          explanation: "「以下」はその数を含むので $\\leqq$ を用いて、$x \\leqq 7$ と表します。"
+        },
+        {
+          text: "次の文を不等式で表しなさい。<br>$(3)\\quad x \\text{ に } 5 \\text{ をたした数は } 30 \\text{ より小さい。}$",
+          correct: "$x + 5 < 30$",
+          dummy: ["$x + 5 \\leqq 30$", "$x + 5 > 30$", "$x + 5 \\geqq 30$"],
+          explanation: "$x$ に $5$ を足した数は $x + 5$ です。「より小さい」は $<$ を用いて、$x + 5 < 30$ と表します。"
+        },
+        {
+          text: "次の文を不等式で表しなさい。<br>$(4)\\quad 6 \\text{ 人が } x \\text{ 円ずつ出すと，合計は } 1000 \\text{ 円以上になる。}$",
+          correct: "$6x \\geqq 1000$",
+          dummy: ["$6x > 1000$", "$6x \\leqq 1000$", "$6x < 1000$"],
+          explanation: "$6$ 人が $x$ 円ずつ出すと合計は $6x$ 円です。「以上」はその数を含むので $\\geqq$ を用いて、$6x \\geqq 1000$ と表します。"
+        },
+        {
+          text: "次の不等式が表す値の範囲として正しい説明を選びなさい。<br>$(1)\\quad x < 3$",
+          correct: "点 $3$ を含まず，それより左側の範囲（白丸）",
+          dummy: ["点 $3$ を含み，それより左側の範囲（黒丸）", "点 $3$ を含まず，それより右側の範囲（白丸）", "点 $3$ を含み，それより右側の範囲（黒丸）"],
+          explanation: "$<$ は $3$ を含まないので白丸で表し、 $3$ より小さい範囲（左側）を図示します。"
+        },
+        {
+          text: "次の不等式が表す値の範囲として正しい説明を選びなさい。<br>$(2)\\quad x > 2$",
+          correct: "点 $2$ を含まず，それより右側の範囲（白丸）",
+          dummy: ["点 $2$ を含み，それより右側の範囲（黒丸）", "点 $2$ を含まず，それより左側の範囲（白丸）", "点 $2$ を含み，それより左側の範囲（黒丸）"],
+          explanation: "$>$ は $2$ を含まないので白丸で表し、 $2$ より大きい範囲（右側）を図示します。"
+        },
+        {
+          text: "次の不等式が表す値の範囲として正しい説明を選びなさい。<br>$(3)\\quad x \\leqq -1$",
+          correct: "点 $-1$ を含み，それより左側の範囲（黒丸）",
+          dummy: ["点 $-1$ を含まず，それより左側の範囲（白丸）", "点 $-1$ を含み，それより右側の範囲（黒丸）", "点 $-1$ を含まず，それより右側の範囲（白丸）"],
+          explanation: "$\\leqq$ は $-1$ を含むので黒丸で表し、 $-1$ 以下の範囲（左側）を図示します。"
+        },
+        {
+          text: "次の不等式が表す値の範囲として正しい説明を選びなさい。<br>$(4)\\quad x \\geqq 0$",
+          correct: "点 $0$ を含み，それより右側の範囲（黒丸）",
+          dummy: ["点 $0$ を含まず，それより右側の範囲（白丸）", "点 $0$ を含み，それより左側の範囲（黒丸）", "点 $0$ を含まず，それより左側の範囲（白丸）"],
+          explanation: "$\\geqq$ は $0$ を含むので黒丸で表し、 $0$ 以上の範囲（右側）を図示します。"
+        }
+      ]
+    },
+    {
+      id: "set-inequality-calc",
+      title: "【問題3】1次不等式の計算(全14問)",
+      isSimilar: false,
+      questions: [
+        {
+          text: "次の1次不等式を解きなさい。<br>$(1)\\quad x - 3 < 5$",
+          correct: "$x < 8$",
+          dummy: ["$x < 2$", "$x > 8$", "$x < -2$"],
+          explanation: "$-3$ を右辺に移項すると、<br>$x < 5 + 3$<br>$x < 8$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(2)\\quad x + 2 > 1$",
+          correct: "$x > -1$",
+          dummy: ["$x > 3$", "$x < -1$", "$x > 1$"],
+          explanation: "$+2$ を右辺に移項すると、<br>$x > 1 - 2$<br>$x > -1$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(3)\\quad x - 7 > -3$",
+          correct: "$x > 4$",
+          dummy: ["$x > -10$", "$x < 4$", "$x > -4$"],
+          explanation: "$-7$ を右辺に移項すると、<br>$x > -3 + 7$<br>$x > 4$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(4)\\quad x + 1 < -4$",
+          correct: "$x < -5$",
+          dummy: ["$x < -3$", "$x > -5$", "$x < 5$"],
+          explanation: "$+1$ を右辺に移項すると、<br>$x < -4 - 1$<br>$x < -5$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(1)\\quad 2x < 8$",
+          correct: "$x < 4$",
+          dummy: ["$x > 4$", "$x < 6$", "$x < 16$"],
+          explanation: "両辺を正の数 $2$ で割ります。<br>$x < 4$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(2)\\quad 3x \\geqq -4$",
+          correct: "$x \\geqq -\\frac{4}{3}$",
+          dummy: ["$x \\leqq -\\frac{4}{3}$", "$x \\geqq -\\frac{3}{4}$", "$x \\geqq -7$"],
+          explanation: "両辺を正の数 $3$ で割ります。<br>$x \\geqq -\\frac{4}{3}$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(3)\\quad -5x > 10$",
+          correct: "$x < -2$",
+          dummy: ["$x > -2$", "$x < 2$", "$x > 2$"],
+          explanation: "両辺を負の数 $-5$ で割ると、**不等号の向きが変わります**。<br>$x < -2$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(4)\\quad -4x \\leqq -12$",
+          correct: "$x \\geqq 3$",
+          dummy: ["$x \\leqq 3$", "$x \\geqq -3$", "$x \\leqq -3$"],
+          explanation: "両辺を負の数 $-4$ で割ると、**不等号の向きが変わります**。<br>$x \\geqq 3$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(1)\\quad 2x - 5 > 9$",
+          correct: "$x > 7$",
+          dummy: ["$x > 2$", "$x < 7$", "$x > 14$"],
+          explanation: "移項して整理します。<br>$2x > 9 + 5$<br>$2x > 14$<br>両辺を $2$ で割って、$x > 7$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(2)\\quad -4x + 3 \\leqq 11$",
+          correct: "$x \\geqq -2$",
+          dummy: ["$x \\leqq -2$", "$x \\geqq 2$", "$x \\leqq 2$"],
+          explanation: "移項して整理します。<br>$-4x \\leqq 11 - 3$<br>$-4x \\leqq 8$<br>両辺を負の数 $-4$ で割るため、**不等号の向きが変わり** $x \\geqq -2$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(3)\\quad 5x - 4 \\leqq -24$",
+          correct: "$x \\leqq -4$",
+          dummy: ["$x \\geqq -4$", "$x \\leqq -5.6$", "$x \\leqq 4$"],
+          explanation: "移項して整理します。<br>$5x \\leqq -24 + 4$<br>$5x \\leqq -20$<br>両辺を $5$ で割って、$x \\leqq -4$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(4)\\quad -3x + 2 > -7$",
+          correct: "$x < 3$",
+          dummy: ["$x > 3$", "$x < -3$", "$x > -3$"],
+          explanation: "移項して整理します。<br>$-3x > -7 - 2$<br>$-3x > -9$<br>両辺を負の数 $-3$ で割るため、**不等号の向きが変わり** $x < 3$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(5)\\quad 5x + 1 > 4x - 3$",
+          correct: "$x > -4$",
+          dummy: ["$x < -4$", "$x > -2$", "$x > 4$"],
+          explanation: "移項して整理します。<br>$5x - 4x > -3 - 1$<br>$x > -4$"
+        },
+        {
+          text: "次の1次不等式を解きなさい。<br>$(6)\\quad x + 3 \\geqq 2x + 10$",
+          correct: "$x \\leqq -7$",
+          dummy: ["$x \\geqq -7$", "$x \\leqq 7$", "$x \\geqq 13$"],
+          explanation: "移項して整理します。<br>$x - 2x \\geqq 10 - 3$<br>$-x \\geqq 7$<br>両辺に $-1$ をかけるため、**不等号の向きが変わり** $x \\leqq -7$"
+        }
+      ]
+    },
+    {
+      id: "set-inequality-advanced",
+      title: "【問題4】連立不等式・利用(全2問)",
+      isSimilar: false,
+      questions: [
+        {
+          text: "次の連立不等式を解きなさい。<br>$$\\begin{cases} x - 3 \\leqq 5 \\quad \\dots ① \\\\ 2x - 1 < 3x \\quad \\dots ② \\end{cases}$$",
+          correct: "$-1 < x \\leqq 8$",
+          dummy: ["$x \\leqq 8$", "$x > -1$", "$-1 \\leqq x < 8$"],
+          explanation: "①より、$x \\leqq 8$<br>②より、$2x - 3x < 1$ $\\Rightarrow$ $-x < 1$ $\\Rightarrow$ $x > -1$<br>共通範囲を求めると、$-1 < x \\leqq 8$ となります。"
+        },
+        {
+          text: "2000円以下で，1個150円のドーナツを何個かと1本200円のジュース2本を買いたい。このとき，ドーナツは何個まで買うことができるでしょうか。",
+          correct: "10個まで",
+          dummy: ["13個まで", "11個まで", "9個まで"],
+          explanation: "ドーナツの個数を $x$ 個とすると、<br>$150x + 200 \\times 2 \\leqq 2000$<br>$150x + 400 \\leqq 2000$<br>$150x \\leqq 1600$<br>$x \\leqq \\frac{1600}{150} = \\frac{32}{3} = 10.66...$<br>$x$ は自然数なので、最大で **10個** 買えます。"
+        }
+      ]
+    },
+
+    // --- 類問セット（難易度グラデーション・問題数増加調整） ---
+    {
+      id: "set-equation-similar",
+      title: "【類問１】1次方程式 トレーニング(全8問)",
+      isSimilar: true,
+      questions: [
+        // 前半：易しい問題
+        {
+          text: "【類問】次の1次方程式を解きなさい。<br>$(1)\\quad x + 3 = 8$",
+          correct: "$x = 5$",
+          dummy: ["$x = 11$", "$x = -5$", "$x = -11$"],
+          explanation: "$+3$ を右辺に移項して、$x = 8 - 3 = 5$ です。"
+        },
+        {
+          text: "【類問】次の1次方程式を解きなさい。<br>$(2)\\quad x - 4 = 5$",
+          correct: "$x = 9$",
+          dummy: ["$x = 1$", "$x = -1$", "$x = -9$"],
+          explanation: "$-4$ を右辺に移項すると、$x = 5 + 4 = 9$ となります。"
+        },
+        {
+          text: "【類問】次の1次方程式を解きなさい。<br>$(3)\\quad 3x = 12$",
+          correct: "$x = 4$",
+          dummy: ["$x = 36$", "$x = 9$", "$x = -4$"],
+          explanation: "両辺を $3$ で割って、$x = 4$ です。"
+        },
+        {
+          text: "【類問】次の1次方程式を解きなさい。<br>$(4)\\quad 2x - 3 = 7$",
+          correct: "$x = 5$",
+          dummy: ["$x = 2$", "$x = 10$", "$x = -5$"],
+          explanation: "$-3$ を移項すると $2x = 10$ となり、$x = 5$ です。"
+        },
+        // 後半：標準問題
+        {
+          text: "【類問】次の1次方程式を解きなさい。<br>$(5)\\quad 3x + 7 = 0$",
+          correct: "$x = -\\frac{7}{3}$",
+          dummy: ["$x = \\frac{7}{3}$", "$x = -\\frac{3}{7}$", "$x = -4$"],
+          explanation: "$+7$ を右辺に移項すると $3x = -7$ となり、$x = -\\frac{7}{3}$ となります。"
+        },
+        {
+          text: "【類問】次の1次方程式を解きなさい。<br>$(6)\\quad 3x + 4 = 8x - 6$",
+          correct: "$x = 2$",
+          dummy: ["$x = -2$", "$x = 10$", "$x = -10$"],
+          explanation: "移項すると $3x - 8x = -6 - 4$ より $-5x = -10$ となり、$x = 2$ となります。"
+        },
+        {
+          text: "【類問】次の1次方程式を解きなさい。<br>$(7)\\quad 5x + 2 = -x - 10$",
+          correct: "$x = -2$",
+          dummy: ["$x = 2$", "$x = -4$", "$x = 4$"],
+          explanation: "移項すると $5x + x = -10 - 2$ より $6x = -12$ となり、$x = -2$ となります。"
+        },
+        {
+          text: "【類問】次の1次方程式を解きなさい。<br>$(8)\\quad 4x - 3 = 3x + 5$",
+          correct: "$x = 8$",
+          dummy: ["$x = 2$", "$x = -8$", "$x = -2$"],
+          explanation: "移項すると $4x - 3x = 5 + 3$ より $x = 8$ となります。"
+        }
+      ]
+    },
+    {
+      id: "set-inequality-similar",
+      title: "【類問２】1次不等式 基本概念トレーニング(全14問)",
+      isSimilar: true,
+      questions: [
+        // 前半：易しい問題
+        {
+          text: "【類問】次の空らんに，不等号 $<$ または $>$ を入れなさい。<br>$(1)\\quad 1 \\;\\square\\; 5$",
+          correct: "$<$",
+          dummy: ["$>$"],
+          explanation: "$1$ は $5$ より小さいので、$1 < 5$ です。"
+        },
+        {
+          text: "【類問】次の空らんに，不等号 $<$ または $>$ を入れなさい。<br>$(2)\\quad 5 \\;\\square\\; 8$",
+          correct: "$<$",
+          dummy: ["$>$"],
+          explanation: "$5$ は $8$ より小さいので、$5 < 8$ です。"
+        },
+        {
+          text: "【類問】次の空らんに，不等号 $<$ または $>$ を入れなさい。<br>$(3)\\quad 4 \\;\\square\\; -2$",
+          correct: "$>$",
+          dummy: ["$<$"],
+          explanation: "正の数 $4$ は負の数 $-2$ より大きいので、$4 > -2$ です。"
+        },
+        {
+          text: "【類問】次の空らんに，不等号 $<$ または $>$ を入れなさい。<br>$(4)\\quad -1 \\;\\square\\; -4$",
+          correct: "$>$",
+          dummy: ["$<$"],
+          explanation: "数直線上で $-1$ は $-4$ より右側にあるので、$-1 > -4$ です。"
+        },
+        {
+          text: "【類問】次の空らんに，不等号 $<$ または $>$ を入れなさい。<br>$(5)\\quad -3 \\;\\square\\; 0$",
+          correct: "$<$",
+          dummy: ["$>$"],
+          explanation: "負の数 $-3$ は $0$ より小さいので、$-3 < 0$ です。"
+        },
+        {
+          text: "【類問】次の文を不等式で表しなさい。<br>$(6)\\quad x \\text{ は } 5 \\text{ 未満である。}$",
+          correct: "$x < 5$",
+          dummy: ["$x \\leqq 5$", "$x > 5$", "$x \\geqq 5$"],
+          explanation: "「未満」はその数を含まないので $<$ を用いて、$x < 5$ と表します。"
+        },
+        {
+          text: "【類問】次の文を不等式で表しなさい。<br>$(7)\\quad x \\text{ は } 10 \\text{ 以上である。}$",
+          correct: "$x \\geqq 10$",
+          dummy: ["$x > 10$", "$x \\leqq 10$", "$x < 10$"],
+          explanation: "「以上」はその数を含むので $\\geqq$ を用いて、$x \\geqq 10$ と表します。"
+        },
+        // 後半：標準問題
+        {
+          text: "【類問】次の文を不等式で表しなさい。<br>$(8)\\quad x \\text{ から } 3 \\text{ をひいた数は } 15 \\text{ より大きい。}$",
+          correct: "$x - 3 > 15$",
+          dummy: ["$x - 3 \\geqq 15$", "$x - 3 < 15$", "$x - 3 \\leqq 15$"],
+          explanation: "$x$ から $3$ を引いた数は $x - 3$ です。「より大きい」は $>$ を用いて、$x - 3 > 15$ と表します。"
+        },
+        {
+          text: "【類問】次の文を不等式で表しなさい。<br>$(9)\\quad 1 \\text{ 個 } x \\text{ 円のりんごを } 4 \\text{ 個買うと，代金は } 800 \\text{ 円以下になる。}$",
+          correct: "$4x \\leqq 800$",
+          dummy: ["$4x < 800$", "$4x \\geqq 800$", "$4x > 800$"],
+          explanation: "$x$ 円のりんご $4$ 個の代金は $4x$ 円です。「以下」は $\\leqq$ を用いて、$4x \\leqq 800$ と表します。"
+        },
+        {
+          text: "【類問】次の不等式が表す値の範囲として正しい説明を選びなさい。<br>$(10)\\quad x < -2$",
+          correct: "点 $-2$ を含まず，それより左側の範囲（白丸）",
+          dummy: ["点 $-2$ を含み，それより左側の範囲（黒丸）", "点 $-2$ を含まず，それより右側の範囲（白丸）", "点 $-2$ を含み，それより右側の範囲（黒丸）"],
+          explanation: "$<$ は $-2$ を含まないので白丸で表し、 $-2$ より小さい範囲（左側）を図示します。"
+        },
+        {
+          text: "【類問】次の不等式が表す値の範囲として正しい説明を選びなさい。<br>$(11)\\quad x > 1$",
+          correct: "点 $1$ を含まず，それより右側の範囲（白丸）",
+          dummy: ["点 $1$ を含み，それより右側の範囲（黒丸）", "点 $1$ を含まず，それより左側の範囲（白丸）", "点 $1$ を含み，それより左側の範囲（黒丸）"],
+          explanation: "$>$ は $1$ を含まないので白丸で表し、 $1$ より大きい範囲（右側）を図示します。"
+        },
+        {
+          text: "【類問】次の不等式が表す値の範囲として正しい説明を選びなさい。<br>$(12)\\quad x \\leqq 4$",
+          correct: "点 $4$ を含み，それより左側の範囲（黒丸）",
+          dummy: ["点 $4$ を含まず，それより左側の範囲（白丸）", "点 $4$ を含み，それより右側の範囲（黒丸）", "点 $4$ を含まず，それより右側の範囲（白丸）"],
+          explanation: "$\\leqq$ は $4$ を含むので黒丸で表し、 $4$ 以下の範囲（左側）を図示します。"
+        },
+        {
+          text: "【類問】次の不等式が表す値の範囲として正しい説明を選びなさい。<br>$(13)\\quad x \\geqq -3$",
+          correct: "点 $-3$ を含み，それより右側の範囲（黒丸）",
+          dummy: ["点 $-3$ を含まず，それより右側の範囲（白丸）", "点 $-3$ を含み，それより左側の範囲（黒丸）", "点 $-3$ を含まず，それより左側の範囲（白丸）"],
+          explanation: "$\\geqq$ は $-3$ を含むので黒丸で表し、 $-3$ 以上の範囲（右側）を図示します。"
+        },
+        {
+          text: "【類問】次の不等式が表す値の範囲として正しい説明を選びなさい。<br>$(14)\\quad x \\leqq 0$",
+          correct: "点 $0$ を含み，それより左側の範囲（黒丸）",
+          dummy: ["点 $0$ を含まず，それより左側の範囲（白丸）", "点 $0$ を含み，それより右側の範囲（黒丸）", "点 $0$ を含まず，それより右側の範囲（白丸）"],
+          explanation: "$\\leqq$ は $0$ を含むので黒丸で表し、 $0$ 以下の範囲（左側）を図示します。"
+        }
+      ]
+    },
+    {
+      id: "set-inequality-calc-similar",
+      title: "【類問３】1次不等式の計算(全16問)",
+      isSimilar: true,
+      questions: [
+        // 前半：易しい問題
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(1)\\quad x - 2 < 3$",
+          correct: "$x < 5$",
+          dummy: ["$x < 1$", "$x > 5$", "$x < -1$"],
+          explanation: "$-2$ を移項して $x < 3 + 2$ より $x < 5$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(2)\\quad x - 4 < 2$",
+          correct: "$x < 6$",
+          dummy: ["$x < -2$", "$x > 6$", "$x < 2$"],
+          explanation: "$-4$ を右辺に移項すると、$x < 2 + 4$ より $x < 6$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(3)\\quad x + 5 > 3$",
+          correct: "$x > -2$",
+          dummy: ["$x > 8$", "$x < -2$", "$x > 2$"],
+          explanation: "$+5$ を右辺に移項すると、$x > 3 - 5$ より $x > -2$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(4)\\quad x - 2 > -5$",
+          correct: "$x > -3$",
+          dummy: ["$x > -7$", "$x < -3$", "$x > 3$"],
+          explanation: "$-2$ を右辺に移項すると、$x > -5 + 2$ より $x > -3$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(5)\\quad 2x < 10$",
+          correct: "$x < 5$",
+          dummy: ["$x > 5$", "$x < 8$", "$x < 20$"],
+          explanation: "両辺を正の数 $2$ で割って $x < 5$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(6)\\quad 4x < 12$",
+          correct: "$x < 3$",
+          dummy: ["$x > 3$", "$x < 8$", "$x < 16$"],
+          explanation: "両辺を正の数 $4$ で割ると $x < 3$"
+        },
+        // 後半：標準問題
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(7)\\quad 5x \\geqq -3$",
+          correct: "$x \\geqq -\\frac{3}{5}$",
+          dummy: ["$x \\leqq -\\frac{3}{5}$", "$x \\geqq -\\frac{5}{3}$", "$x \\geqq -8$"],
+          explanation: "両辺を正の数 $5$ で割ると $x \\geqq -\\frac{3}{5}$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(8)\\quad -3x > 15$",
+          correct: "$x < -5$",
+          dummy: ["$x > -5$", "$x < 5$", "$x > 5$"],
+          explanation: "両辺を負の数 $-3$ で割ると不等号の向きが変わり $x < -5$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(9)\\quad -2x \\leqq -10$",
+          correct: "$x \\geqq 5$",
+          dummy: ["$x \\leqq 5$", "$x \\geqq -5$", "$x \\leqq -5$"],
+          explanation: "両辺を負の数 $-2$ で割ると不等号の向きが変わり $x \\geqq 5$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(10)\\quad 3x - 4 > 11$",
+          correct: "$x > 5$",
+          dummy: ["$x > 2$", "$x < 5$", "$x > 15$"],
+          explanation: "移項すると $3x > 15$ となり、$x > 5$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(11)\\quad -2x + 5 \\leqq 13$",
+          correct: "$x \\geqq -4$",
+          dummy: ["$x \\leqq -4$", "$x \\geqq 4$", "$x \\leqq 4$"],
+          explanation: "移項すると $-2x \\leqq 8$ となり、負の数 $-2$ で割るため不等号が逆になり $x \\geqq -4$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(12)\\quad 4x - 2 \\leqq -18$",
+          correct: "$x \\leqq -4$",
+          dummy: ["$x \\geqq -4$", "$x \\leqq -5$", "$x \\leqq 4$"],
+          explanation: "移項すると $4x \\leqq -16$ となり、$x \\leqq -4$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(13)\\quad -5x + 3 > -12$",
+          correct: "$x < 3$",
+          dummy: ["$x > 3$", "$x < -3$", "$x > -3$"],
+          explanation: "移項すると $-5x > -15$ となり、負の数 $-5$ で割るため不等号が逆になり $x < 3$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(14)\\quad 6x + 2 > 5x - 4$",
+          correct: "$x > -6$",
+          dummy: ["$x < -6$", "$x > -2$", "$x > 6$"],
+          explanation: "移項すると $6x - 5x > -4 - 2$ より $x > -6$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(15)\\quad 2x + 5 \\geqq 3x + 11$",
+          correct: "$x \\leqq -6$",
+          dummy: ["$x \\geqq -6$", "$x \\leqq 6$", "$x \\geqq 16$"],
+          explanation: "移項すると $-x \\geqq 6$ となり、両辺に $-1$ をかけて $x \\leqq -6$"
+        },
+        {
+          text: "【類問】次の1次不等式を解きなさい。<br>$(16)\\quad 3x - 1 \\leqq 5x + 9$",
+          correct: "$x \\geqq -5$",
+          dummy: ["$x \\leqq -5$", "$x \\geqq 5$", "$x \\leqq 5$"],
+          explanation: "移項すると $-2x \\leqq 10$ となり、負の数 $-2$ で割るため $x \\geqq -5$"
+        }
+      ]
+    },
+    {
+      id: "set-inequality-advanced-similar",
+      title: "【類問４】連立不等式・利用(全3問)",
+      isSimilar: true,
+      questions: [
+        // 前半：易しい問題
+        {
+          text: "【類問】次の連立不等式を解きなさい。<br>$$\\begin{cases} x > 1 \\quad \\dots ① \\\\ x \\leqq 4 \\quad \\dots ② \\end{cases}$$",
+          correct: "$1 < x \\leqq 4$",
+          dummy: ["$x > 1$", "$x \\leqq 4$", "$1 \\leqq x < 4$"],
+          explanation: "①と②の共通の範囲を求めると、$1 < x \\leqq 4$ となります。"
+        },
+        // 後半：標準問題
+        {
+          text: "【類問】次の連立不等式を解きなさい。<br>$$\\begin{cases} x - 2 \\leqq 4 \\quad \\dots ① \\\\ 3x - 2 < 4x \\quad \\dots ② \\end{cases}$$",
+          correct: "$-2 < x \\leqq 6$",
+          dummy: ["$x \\leqq 6$", "$x > -2$", "$-2 \\leqq x < 6$"],
+          explanation: "①より $x \\leqq 6$<br>②より $3x - 4x < 2 \\Rightarrow -x < 2 \\Rightarrow x > -2$<br>共通範囲を求めると、$-2 < x \\leqq 6$ となります。"
+        },
+        {
+          text: "【類問】1500円以下で，1個120円のパンを何個かと1本180円のジュース2本を買いたい。このとき，パンは何個まで買うことができるでしょうか。",
+          correct: "9個まで",
+          dummy: ["12個まで", "10個まで", "8個まで"],
+          explanation: "パンの個数を $x$ 個とすると、<br>$120x + 180 \\times 2 \\leqq 1500$<br>$120x + 360 \\leqq 1500$<br>$120x \\leqq 1140$<br>$x \\leqq \\frac{1140}{120} = 9.5$<br>$x$ は自然数なので、最大で **9個** 買えます。"
+        }
+      ]
+    }
+  ];
+
+  let currentSet = null;
+  let currentQuestions = [];
+  let currentQIndex = 0;
+  let score = 0;
+  let userAnswers = []; 
+  let userInfo = { grade: "", classNum: "", number: "", name: "" };
+  let isMemoVisible = false;
+  let selectedUnderstanding = null;
+
+  function populateSelectOptions() {
+    const gradeSelect = document.getElementById("input-grade");
+    const classSelect = document.getElementById("input-class");
+    const numberSelect = document.getElementById("input-number");
+
+    gradeSelect.innerHTML = '<option value="">選択</option>';
+    classSelect.innerHTML = '<option value="">選択</option>';
+    numberSelect.innerHTML = '<option value="">選択</option>';
+
+    for (let i = 1; i <= 3; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      gradeSelect.appendChild(opt);
+    }
+
+    for (let i = 1; i <= 4; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      classSelect.appendChild(opt);
+    }
+
+    for (let i = 1; i <= 40; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      numberSelect.appendChild(opt);
+    }
+  }
+
+  function loadUserInfo() {
+    const saved = localStorage.getItem("mathQuizUserInfo");
+    if (saved) {
+      userInfo = JSON.parse(saved);
+      if (userInfo.grade && userInfo.classNum && userInfo.number && userInfo.name) {
+        document.getElementById("input-grade").value = userInfo.grade;
+        document.getElementById("input-class").value = userInfo.classNum;
+        document.getElementById("input-number").value = userInfo.number;
+        document.getElementById("input-name").value = userInfo.name;
+        updateUserDisplayBar();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function saveUserInfo(e) {
+    e.preventDefault();
+    userInfo.grade = document.getElementById("input-grade").value;
+    userInfo.classNum = document.getElementById("input-class").value;
+    userInfo.number = document.getElementById("input-number").value;
+    userInfo.name = document.getElementById("input-name").value.trim();
+
+    localStorage.setItem("mathQuizUserInfo", JSON.stringify(userInfo));
+    updateUserDisplayBar();
+    showMenu();
+  }
+
+  function resetAllData() {
+    if (confirm("名前・学年組情報およびすべての解答履歴（正答率）を削除して初期化しますか？")) {
+      localStorage.clear();
+      userInfo = { grade: "", classNum: "", number: "", name: "" };
+      document.getElementById("input-grade").value = "";
+      document.getElementById("input-class").value = "";
+      document.getElementById("input-number").value = "";
+      document.getElementById("input-name").value = "";
+      alert("データをすべてリセットしました。");
+      showUserInfoForm();
+    }
+  }
+
+  function updateUserDisplayBar() {
+    const textEl = document.getElementById("user-display-text");
+    textEl.textContent = `👤 ${userInfo.grade}年 ${userInfo.classNum}組 ${userInfo.number}番  ${userInfo.name} さん`;
+  }
+
+  function showUserInfoForm() {
+    document.getElementById("user-info-box").style.display = "block";
+    document.getElementById("menu-box").style.display = "none";
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("score-box").style.display = "none";
+    document.getElementById("game-speed-box").style.display = "none";
+  }
+
+  function renderMath() {
+    if (window.MathJax) {
+      MathJax.typesetPromise();
+    }
+  }
+
+  function getAccuracyRecord(setId) {
+    const saved = localStorage.getItem(`accuracy_${setId}`);
+    return saved !== null ? saved : null;
+  }
+
+  function saveAccuracyRecord(setId, accuracyRate) {
+    localStorage.setItem(`accuracy_${setId}`, accuracyRate);
+  }
+
+  function showMenu() {
+    document.getElementById("user-info-box").style.display = "none";
+    document.getElementById("menu-box").style.display = "block";
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("score-box").style.display = "none";
+    document.getElementById("game-speed-box").style.display = "none";
+
+    const container = document.getElementById("menu-list-container");
+    container.innerHTML = "";
+
+    quizSets.forEach(set => {
+      const card = document.createElement("div");
+      if (set.isSimilar) {
+        card.className = "menu-card similar-card";
+      } else {
+        card.className = "menu-card";
+      }
+
+      const acc = getAccuracyRecord(set.id);
+      const accText = acc !== null ? `正答率: ${acc}%` : "未回答";
+
+      card.innerHTML = `
+        <div>
+          <div class="menu-card-title">${set.title}</div>
+        </div>
+        <div class="menu-card-stats">
+          <span class="menu-card-badge">${set.questions.length}問</span>
+          <span class="menu-card-accuracy">${accText}</span>
+        </div>
+      `;
+      card.onclick = () => startQuiz(set.id);
+      container.appendChild(card);
+    });
+
+    renderMath();
+  }
+
+  function startQuiz(setId) {
+    currentSet = quizSets.find(s => s.id === setId);
+    currentQuestions = [...currentSet.questions];
+    currentQIndex = 0;
+    score = 0;
+    userAnswers = [];
+
+    document.getElementById("menu-box").style.display = "none";
+    document.getElementById("quiz-box").style.display = "block";
+    document.getElementById("score-box").style.display = "none";
+    document.getElementById("game-speed-box").style.display = "none";
+
+    isMemoVisible = false;
+    updateMemoVisibility();
+
+    showQuestion();
+  }
+
+  function showQuestion() {
+    document.getElementById("result-section").style.display = "none";
+    clearMemoCanvas();
+
+    const q = currentQuestions[currentQIndex];
+    document.getElementById("q-num").textContent = `第 ${currentQIndex + 1} 問 / 全 ${currentQuestions.length} 問`;
+    
+    const titleEl = document.getElementById("q-title");
+    titleEl.innerHTML = q.text;
+
+    const optionsContainer = document.getElementById("options-container");
+    optionsContainer.innerHTML = "";
+
+    let choices = [
+      { text: q.correct, isCorrect: true },
+      ...q.dummy.map(d => ({ text: d, isCorrect: false }))
+    ];
+    
+    choices.sort(() => Math.random() - 0.5);
+
+    choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.className = "btn-option";
+      btn.innerHTML = choice.text;
+      
+      btn.onclick = () => checkAnswer(choice.isCorrect, btn, q);
+      optionsContainer.appendChild(btn);
+    });
+
+    renderMath();
+  }
+
+  function checkAnswer(isCorrect, selectedBtn, questionObj) {
+    const buttons = document.querySelectorAll(".btn-option");
+    buttons.forEach(btn => btn.disabled = true);
+
+    userAnswers.push({
+      qIndex: currentQIndex + 1,
+      isCorrect: isCorrect
+    });
+
+    if (isCorrect) {
+      score++;
+      selectedBtn.classList.add("correct-choice");
+      document.getElementById("result-text").textContent = "⭕️ 正解！";
+      document.getElementById("result-text").className = "result-header correct";
+    } else {
+      selectedBtn.classList.add("wrong-choice");
+      document.getElementById("result-text").textContent = "❌ 不正解...";
+      document.getElementById("result-text").className = "result-header incorrect";
+      
+      buttons.forEach(btn => {
+        if (btn.innerHTML.trim() === questionObj.correct.trim()) {
+          btn.classList.add("correct-choice");
+        }
+      });
+    }
+
+    document.getElementById("explanation-text").innerHTML = questionObj.explanation;
+    document.getElementById("result-section").style.display = "block";
+
+    renderMath();
+  }
+
+  function nextQuestion() {
+    currentQIndex++;
+    if (currentQIndex < currentQuestions.length) {
+      showQuestion();
+    } else {
+      showScore();
+    }
+  }
+
+  function showScore() {
+    document.getElementById("quiz-box").style.display = "none";
+    document.getElementById("score-box").style.display = "block";
+
+    const total = currentQuestions.length;
+    const accuracyRate = Math.round((score / total) * 100);
+
+    saveAccuracyRecord(currentSet.id, accuracyRate);
+
+    let answerDetailsStr = userAnswers.map(a => a.isCorrect ? "○" : "×").join("");
+
+    document.getElementById("score-title").textContent = `🎉 「${currentSet.title}」 終了 🎉`;
+    document.getElementById("score-text").textContent = `${total} 問中 ${score} 問 正解！`;
+    document.getElementById("accuracy-text").textContent = `正答率: ${accuracyRate}%`;
+    document.getElementById("details-text").textContent = `結果: ${answerDetailsStr}`;
+
+    // 類問シートで全問正解した場合のみミニゲーム遷移ボタンを表示
+    const btnMinigame = document.getElementById("btn-goto-minigame");
+    if (currentSet.isSimilar && accuracyRate === 100) {
+      btnMinigame.style.display = "block";
+    } else {
+      btnMinigame.style.display = "none";
+    }
+
+    // 振り返りの初期化
+    selectedUnderstanding = null;
+    document.querySelectorAll(".btn-understanding").forEach(btn => btn.classList.remove("selected"));
+    document.getElementById("reflection-comment").value = "";
+
+    renderMath();
+  }
+
+  function selectUnderstanding(level, btn) {
+    selectedUnderstanding = level;
+    document.querySelectorAll(".btn-understanding").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+  }
+
+  // 振り返りの入力バリデーション付き送信処理
+  function processReflectionAndData() {
+    const comment = document.getElementById("reflection-comment").value.trim();
+
+    // 未入力チェック
+    if (selectedUnderstanding === null) {
+      alert("「1. 理解度」を選択してください。");
+      return false;
+    }
+    if (comment === "") {
+      alert("「2. わかったこと・疑問点・感想」を入力してください。");
+      return false;
+    }
+
+    const total = currentQuestions.length;
+    const accuracyRate = Math.round((score / total) * 100);
+    let answerDetailsStr = userAnswers.map(a => a.isCorrect ? "○" : "×").join("");
+
+    sendDataToTeacher(
+      currentSet.id,
+      currentSet.title,
+      score,
+      total,
+      accuracyRate,
+      answerDetailsStr,
+      selectedUnderstanding,
+      comment
+    );
+    return true;
+  }
+
+  function finishAndRestart() {
+    if (processReflectionAndData()) {
+      restartQuiz();
+    }
+  }
+
+  function finishAndShowMenu() {
+    if (processReflectionAndData()) {
+      showMenu();
+    }
+  }
+
+  // 振り返りを保存・送信してからミニゲームに遷移する
+  function finishAndGoToMinigame() {
+    if (processReflectionAndData()) {
+      startSpeedAttack();
+    }
+  }
+
+  function sendDataToTeacher(setId, setTitle, score, total, accuracy, details, understanding, comment) {
+    if (!GAS_WEBAPP_URL) return;
+
+    const payload = {
+      type: "math1",
+      grade: parseInt(userInfo.grade, 10),
+      classNum: parseInt(userInfo.classNum, 10),
+      number: parseInt(userInfo.number, 10),
+      name: userInfo.name,
+      setId: setId,
+      setTitle: setTitle,
+      score: score,
+      total: total,
+      accuracy: accuracy,
+      details: details,
+      understanding: understanding,
+      comment: comment
+    };
+
+    fetch(GAS_WEBAPP_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    })
+    .catch(err => console.error(err));
+  }
+
+  function restartQuiz() {
+    startQuiz(currentSet.id);
+  }
+
+  /* --- ミニゲーム: スピード計算タイムアタック --- */
+  let speedQuestions = [];
+  let speedQIndex = 0;
+  let speedStartTime = 0;
+  let speedTimerInterval = null;
+  let speedPausedTime = 0; // 一時停止用累積時間
+
+  function startSpeedAttack() {
+    document.getElementById("score-box").style.display = "none";
+    document.getElementById("game-speed-box").style.display = "block";
+
+    speedQuestions = generateSpeedQuestions(5);
+    speedQIndex = 0;
+    speedPausedTime = 0;
+    
+    speedStartTime = Date.now();
+    startSpeedTimer();
+
+    showSpeedQuestion();
+  }
+
+  function startSpeedTimer() {
+    speedTimerInterval = setInterval(() => {
+      const elapsed = ((Date.now() - speedStartTime + speedPausedTime) / 1000).toFixed(2);
+      document.getElementById("speed-timer").textContent = `${elapsed} 秒`;
+    }, 50);
+  }
+
+  function stopSpeedTimer() {
+    if (speedTimerInterval) {
+      clearInterval(speedTimerInterval);
+      speedTimerInterval = null;
+    }
+  }
+
+  function generateSpeedQuestions(count) {
+    let qList = [];
+    for (let i = 0; i < count; i++) {
+      let a = Math.floor(Math.random() * 12) + 2;
+      let b = Math.floor(Math.random() * 12) + 2;
+      let type = Math.floor(Math.random() * 3);
+      let text, ans, d1, d2, d3;
+
+      if (type === 0) {
+        text = `${a} + ${b} = ?`;
+        ans = a + b;
+      } else if (type === 1) {
+        ans = a;
+        text = `${a + b} - ${b} = ?`;
+      } else {
+        text = `${a} × ${b} = ?`;
+        ans = a * b;
+      }
+
+      d1 = ans + (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 3) + 1);
+      d2 = ans + (Math.random() > 0.5 ? 2 : -2) * (Math.floor(Math.random() * 3) + 1);
+      d3 = ans + 10;
+
+      let dummy = Array.from(new Set([d1, d2, d3])).filter(d => d !== ans);
+      while (dummy.length < 3) dummy.push(ans + dummy.length + 1);
+
+      qList.push({ text: text, ans: ans, dummy: dummy });
+    }
+    return qList;
+  }
+
+  function showSpeedQuestion() {
+    const q = speedQuestions[speedQIndex];
+    document.getElementById("speed-q-num").textContent = `第 ${speedQIndex + 1} / ${speedQuestions.length} 問`;
+    document.getElementById("speed-q-text").textContent = q.text;
+
+    const container = document.getElementById("speed-options-container");
+    container.innerHTML = "";
+
+    let choices = [q.ans, ...q.dummy].sort(() => Math.random() - 0.5);
+
+    choices.forEach(val => {
+      const btn = document.createElement("button");
+      btn.className = "btn-option";
+      btn.style.fontSize = "24px";
+      btn.textContent = val;
+      btn.onclick = () => {
+        if (val === q.ans) {
+          speedQIndex++;
+          if (speedQIndex < speedQuestions.length) {
+            showSpeedQuestion();
+          } else {
+            stopSpeedTimer();
+            const finalTime = ((Date.now() - speedStartTime + speedPausedTime) / 1000).toFixed(2);
+            alert(`⚡ 完走！ 記録: ${finalTime} 秒！`);
+            finishMinigame();
+          }
+        } else {
+          btn.style.backgroundColor = "#f8d7da";
+        }
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  // ミニゲーム途中の終了確認（一時停止対応）
+  function confirmFinishMinigame() {
+    // タイマー一時停止
+    stopSpeedTimer();
+    const pauseStart = Date.now();
+
+    const isExit = confirm("終了してよいですか？");
+    if (isExit) {
+      finishMinigame();
+    } else {
+      // 一時停止していた時間を積算してタイマー再開
+      speedPausedTime += (Date.now() - pauseStart);
+      speedStartTime = Date.now();
+      startSpeedTimer();
+    }
+  }
+
+  function finishMinigame() {
+    stopSpeedTimer();
+    document.getElementById("game-speed-box").style.display = "none";
+    showMenu();
+  }
+
+  /* --- サイドメモ（計算用キャンバス） --- */
+  let memoCanvas = document.getElementById("memo-canvas");
+  let memoCtx = memoCanvas.getContext("2d");
+  let isDrawing = false;
+  let memoMode = 'pen';
+  let lastX = 0;
+  let lastY = 0;
+
+  function toggleMemoLayout() {
+    isMemoVisible = !isMemoVisible;
+    updateMemoVisibility();
+  }
+
+  function updateMemoVisibility() {
+    const mainContainer = document.getElementById("main-container");
+    const memoPanel = document.getElementById("memo-panel");
+    const toggleBtn = document.getElementById("memo-toggle-btn");
+
+    if (isMemoVisible) {
+      mainContainer.classList.add("split-layout");
+      memoPanel.style.display = "flex";
+      toggleBtn.textContent = "✏️ 計算メモを隠す";
+      toggleBtn.classList.add("active");
+      setTimeout(resizeMemoCanvas, 50);
+    } else {
+      mainContainer.classList.remove("split-layout");
+      memoPanel.style.display = "none";
+      toggleBtn.textContent = "✏️ 計算メモを表示";
+      toggleBtn.classList.remove("active");
+    }
+  }
+
+  function resizeMemoCanvas() {
+    const wrapper = document.getElementById("memo-canvas-wrapper");
+    if (!wrapper || wrapper.clientWidth === 0) return;
+
+    if (memoCanvas.width !== wrapper.clientWidth || memoCanvas.height !== wrapper.clientHeight) {
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = memoCanvas.width;
+      tempCanvas.height = memoCanvas.height;
+      const tempCtx = tempCanvas.getContext("2d");
+      tempCtx.drawImage(memoCanvas, 0, 0);
+
+      memoCanvas.width = wrapper.clientWidth;
+      memoCanvas.height = wrapper.clientHeight;
+
+      memoCtx.drawImage(tempCanvas, 0, 0);
+      updateMemoStyle();
+    }
+  }
+
+  function setMemoMode(mode) {
+    memoMode = mode;
+    document.getElementById("tool-pen").classList.toggle("active", mode === 'pen');
+    document.getElementById("tool-eraser").classList.toggle("active", mode === 'eraser');
+    updateMemoStyle();
+  }
+
+  function updateMemoStyle() {
+    memoCtx.lineCap = "round";
+    memoCtx.lineJoin = "round";
+    const size = document.getElementById("memo-size").value;
+    
+    if (memoMode === 'eraser') {
+      memoCtx.globalCompositeOperation = "destination-out";
+      memoCtx.lineWidth = size * 4;
+    } else {
+      memoCtx.globalCompositeOperation = "source-over";
+      memoCtx.strokeStyle = document.getElementById("memo-color").value;
+      memoCtx.lineWidth = size;
+    }
+  }
+
+  function clearMemoCanvas() {
+    memoCtx.clearRect(0, 0, memoCanvas.width, memoCanvas.height);
+  }
+
+  function getCanvasPos(e) {
+    const rect = memoCanvas.getBoundingClientRect();
+    let clientX = e.clientX;
+    let clientY = e.clientY;
+
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    }
+
+    const scaleX = memoCanvas.width / rect.width;
+    const scaleY = memoCanvas.height / rect.height;
+
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
+
+  function startDrawing(e) {
+    isDrawing = true;
+    const pos = getCanvasPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+  }
+
+  function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+
+    const pos = getCanvasPos(e);
+
+    memoCtx.beginPath();
+    memoCtx.moveTo(lastX, lastY);
+    memoCtx.lineTo(pos.x, pos.y);
+    memoCtx.stroke();
+
+    lastX = pos.x;
+    lastY = pos.y;
+  }
+
+  function stopDrawing() {
+    isDrawing = false;
+  }
+
+  memoCanvas.addEventListener("mousedown", startDrawing);
+  memoCanvas.addEventListener("mousemove", draw);
+  memoCanvas.addEventListener("mouseup", stopDrawing);
+  memoCanvas.addEventListener("mouseout", stopDrawing);
+
+  memoCanvas.addEventListener("touchstart", startDrawing, { passive: false });
+  memoCanvas.addEventListener("touchmove", draw, { passive: false });
+  memoCanvas.addEventListener("touchend", stopDrawing);
+
+  window.addEventListener("resize", () => {
+    if (isMemoVisible) {
+      resizeMemoCanvas();
+    }
+  });
+
+  const preventCopyEvents = (e) => {
+    e.preventDefault();
+    return false;
+  };
+
+  document.addEventListener("copy", preventCopyEvents);
+  document.addEventListener("cut", preventCopyEvents);
+  document.addEventListener("contextmenu", preventCopyEvents);
+  document.addEventListener("selectstart", preventCopyEvents);
+
+  populateSelectOptions(); 
+
+  if (loadUserInfo()) {
+    showMenu();
+  } else {
+    showUserInfoForm();
+  }
+</script>
+
+</body>
+</html>
