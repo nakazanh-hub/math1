@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>不等式の数直線図示トレーニング</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap');
+        
+        body {
+            font-family: 'Zen Maru Gothic', 'Inter', sans-serif;
+            background-color: #f0fdf4;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .custom-shadow {
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1), 0 8px 10px -6px rgba(16, 185, 129, 0.1);
+        }
+
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col items-center p-3 sm:p-6">
+
+    <!-- Header -->
+    <header class="w-full max-w-4xl text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-100 text-emerald-800 rounded-full text-sm font-bold mb-2">
+            <i class="fa-solid fa-graduation-cap"></i> 中学数学・高校数学の基礎
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-black text-emerald-700 tracking-tight">
+            不等式の数直線マスター <i class="fa-solid fa-chart-line"></i>
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-600 mt-1">
+            ① 目盛り（数字）をタップして「○」または「●」を置く<br class="hidden sm:inline">
+            ② 点の左右領域をタップして教科書通りの直線を描こう！
+        </p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-4xl bg-white rounded-3xl p-4 sm:p-8 custom-shadow border-2 border-emerald-100 flex flex-col gap-6">
+
+        <!-- Mode Selection & Score Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3 sm:p-4 rounded-2xl border border-slate-100">
+            <!-- Mode Buttons -->
+            <div class="flex flex-wrap gap-2">
+                <button id="btn-mode-basic" onclick="setMode('basic')" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-xl transition duration-200 bg-emerald-600 text-white shadow-md">
+                    <i class="fa-solid fa-play"></i> 基本問題
+                </button>
+                <button id="btn-mode-compound" onclick="setMode('compound')" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-xl transition duration-200 bg-slate-200 text-slate-700 hover:bg-slate-300">
+                    <i class="fa-solid fa-layer-group"></i> 連立・範囲問題
+                </button>
+                <button id="btn-mode-custom" onclick="setMode('custom')" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-xl transition duration-200 bg-slate-200 text-slate-700 hover:bg-slate-300">
+                    <i class="fa-solid fa-pen-to-square"></i> 自作・自由練習
+                </button>
+            </div>
+
+            <!-- Stats Badge -->
+            <div class="flex items-center gap-4 text-xs sm:text-sm font-bold ml-auto">
+                <div class="flex items-center gap-1.5 text-amber-500 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">
+                    <i class="fa-solid fa-fire text-base"></i>
+                    <span>連続正解: <span id="streak-count" class="text-lg">0</span></span>
+                </div>
+                <div class="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+                    <i class="fa-solid fa-trophy text-base"></i>
+                    <span>正解数: <span id="score-count" class="text-lg">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Input Panel -->
+        <div id="custom-panel" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-2xl">
+            <h3 class="font-bold text-amber-800 text-sm mb-2"><i class="fa-solid fa-sliders"></i> オリジナル問題を作成</h3>
+            <div class="flex flex-wrap items-center gap-2">
+                <select id="custom-type" class="px-3 py-2 rounded-xl border border-amber-300 bg-white font-bold text-sm focus:outline-none" onchange="toggleCustomInputs()">
+                    <option value="basic">基本 (例: x > a)</option>
+                    <option value="compound">区間 (例: a < x ≤ b)</option>
+                </select>
+
+                <!-- Basic Custom Inputs -->
+                <div id="custom-basic-inputs" class="flex items-center gap-2">
+                    <span class="font-bold text-lg text-slate-700">x</span>
+                    <select id="custom-op" class="px-3 py-2 rounded-xl border border-amber-300 bg-white font-bold text-base">
+                        <option value=">">&gt;</option>
+                        <option value=">=">&ge;</option>
+                        <option value="<">&lt;</option>
+                        <option value="<=">&le;</option>
+                    </select>
+                    <input type="number" id="custom-val" value="-1" min="-5" max="5" class="w-16 px-3 py-2 rounded-xl border border-amber-300 bg-white font-bold text-center">
+                </div>
+
+                <!-- Compound Custom Inputs -->
+                <div id="custom-compound-inputs" class="hidden flex items-center gap-2">
+                    <input type="number" id="custom-val1" value="-2" min="-5" max="4" class="w-16 px-3 py-2 rounded-xl border border-amber-300 bg-white font-bold text-center">
+                    <select id="custom-op1" class="px-2 py-2 rounded-xl border border-amber-300 bg-white font-bold text-base">
+                        <option value="<">&lt;</option>
+                        <option value="<=">&le;</option>
+                    </select>
+                    <span class="font-bold text-lg text-slate-700">x</span>
+                    <select id="custom-op2" class="px-2 py-2 rounded-xl border border-amber-300 bg-white font-bold text-base">
+                        <option value="<">&lt;</option>
+                        <option value="<=">&le;</option>
+                    </select>
+                    <input type="number" id="custom-val2" value="3" min="-4" max="5" class="w-16 px-3 py-2 rounded-xl border border-amber-300 bg-white font-bold text-center">
+                </div>
+
+                <button onclick="applyCustomProblem()" class="px-4 py-2 bg-amber-600 text-white font-bold text-sm rounded-xl hover:bg-amber-700 transition shadow">
+                    問題をセット
+                </button>
+            </div>
+        </div>
+
+        <!-- Problem Display Area -->
+        <div class="text-center py-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl text-white shadow-md relative overflow-hidden">
+            <div class="absolute top-2 left-3 text-xs opacity-75 font-bold uppercase tracking-wider">PROBLEM</div>
+            <div id="problem-text" class="text-3xl sm:text-5xl font-black py-3 tracking-wider">
+                x > -1
+            </div>
+        </div>
+
+        <!-- Interactive Canvas Container -->
+        <div class="relative w-full bg-slate-50 rounded-2xl border-2 border-slate-200 p-2 sm:p-4 flex flex-col items-center">
+            
+            <!-- Dynamic Step Guide -->
+            <div id="guide-message" class="w-full flex justify-between items-center px-3 py-2 mb-2 bg-emerald-100 text-emerald-900 rounded-xl text-xs sm:text-sm font-bold shadow-sm transition-all duration-300">
+                <span id="guide-text"><i class="fa-solid fa-circle-1 text-emerald-600 text-base"></i> 1. 数直線上の数字（目盛り）をタップして「○」または「●」を置いてください</span>
+                <span class="text-xs text-slate-500 hidden sm:inline">操作ガイド</span>
+            </div>
+
+            <canvas id="numberLineCanvas" class="w-full h-56 sm:h-64 bg-white rounded-xl shadow-inner cursor-pointer"></canvas>
+
+            <!-- Canvas Quick Controls -->
+            <div class="flex items-center justify-between w-full mt-3 px-2">
+                <button onclick="resetCanvasState()" class="px-3 py-1.5 text-xs sm:text-sm font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-xl transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left"></i> リセット
+                </button>
+                <button onclick="toggleHintModal()" class="px-3 py-1.5 text-xs sm:text-sm font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition flex items-center gap-1.5">
+                    <i class="fa-regular fa-lightbulb"></i> ○と●の書き方ヒント
+                </button>
+            </div>
+        </div>
+
+        <!-- Check Answer & Action Buttons -->
+        <div class="flex gap-3">
+            <button id="btn-check" onclick="checkAnswer()" class="flex-1 py-3 sm:py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg sm:text-xl rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-check"></i> 答えあわせ
+            </button>
+            <button id="btn-next" onclick="nextProblem()" class="px-6 py-3 sm:py-4 bg-slate-800 hover:bg-slate-900 text-white font-bold text-base sm:text-lg rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
+                次へ <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- Feedback & Explanation Box -->
+        <div id="feedback-box" class="hidden p-4 sm:p-5 rounded-2xl border-2 transition duration-300">
+            <div id="feedback-header" class="flex items-center gap-2 font-black text-lg sm:text-xl mb-1">
+                <!-- Dynamic Content -->
+            </div>
+            <p id="feedback-detail" class="text-sm sm:text-base font-bold text-slate-700 leading-relaxed">
+                <!-- Dynamic Content -->
+            </p>
+        </div>
+
+    </main>
+
+    <!-- Hint Modal -->
+    <div id="hint-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border-4 border-indigo-100 flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h2 class="text-xl font-black text-indigo-700 flex items-center gap-2">
+                    <i class="fa-regular fa-lightbulb"></i> 学校の教科書ルール
+                </h2>
+                <button onclick="toggleHintModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 text-sm font-bold">
+                <!-- Open Circle -->
+                <div class="flex items-start gap-3 p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+                    <div class="w-10 h-10 rounded-full border-4 border-emerald-500 bg-white flex items-center justify-center shrink-0 text-lg font-black text-emerald-600">○</div>
+                    <div>
+                        <div class="text-emerald-700 font-black text-base">&gt; や &lt; （その数を含まない）</div>
+                        <div class="text-slate-600 text-xs mt-0.5">点から<strong>「斜め上」</strong>に線を立ち上げてから、数直線と平行に伸ばします。</div>
+                    </div>
+                </div>
+
+                <!-- Closed Circle -->
+                <div class="flex items-start gap-3 p-3 bg-amber-50/50 rounded-2xl border border-amber-100">
+                    <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 text-lg font-black text-white">●</div>
+                    <div>
+                        <div class="text-amber-800 font-black text-base">&ge; や &le; （その数を含む）</div>
+                        <div class="text-slate-600 text-xs mt-0.5">点から<strong>「垂直（真上）」</strong>に線を立ち上げてから、数直線と平行に伸ばします。</div>
+                    </div>
+                </div>
+
+                <!-- Step Rule -->
+                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div class="text-slate-800 font-black text-sm mb-1"><i class="fa-solid fa-route"></i> 操作の手順</div>
+                    <ol class="list-decimal list-inside text-xs text-slate-600 space-y-1">
+                        <li>数直線上の目盛り（数字）をタップして <strong>「○」</strong> または <strong>「●」</strong> を設置します。</li>
+                        <li>設置した点の <strong>「右側」</strong> または <strong>「左側」</strong> のエリアをタップして範囲を伸ばします。</li>
+                    </ol>
+                </div>
+            </div>
+
+            <button onclick="toggleHintModal()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl transition">
+                理解できた！
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* --- Audio Synthesizer (Web Audio API) --- */
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playTone(freq, type, duration) {
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
+            tap() { this.playTone(400, 'sine', 0.08); }
+            toggle() { this.playTone(600, 'triangle', 0.12); }
+            warn() { this.playTone(200, 'sine', 0.15); }
+            correct() {
+                this.playTone(523.25, 'sine', 0.15); // C5
+                setTimeout(() => this.playTone(659.25, 'sine', 0.15), 100); // E5
+                setTimeout(() => this.playTone(783.99, 'sine', 0.25), 200); // G5
+            }
+            wrong() {
+                this.playTone(220, 'sawtooth', 0.2); // A3
+                setTimeout(() => this.playTone(207.65, 'sawtooth', 0.3), 150); // G#3
+            }
+        }
+        const sfx = new SoundFX();
+
+        /* --- Global State --- */
+        let currentMode = 'basic'; 
+        let currentProblem = null;
+        let score = 0;
+        let streak = 0;
+
+        // Number Line Constants (-5 to 5)
+        const MIN_VAL = -5;
+        const MAX_VAL = 5;
+        
+        /* 
+           nodeStates[val] = 0 (none), 1 (open '○'), 2 (solid '●')
+        */
+        let nodeStates = {};
+
+        /*
+           10 Interval Spaces between 11 Ticks (-5 to 5):
+           spaceStates[0] : (-5 to -4)
+           spaceStates[1] : (-4 to -3)
+           ...
+           spaceStates[9] : (4 to 5)
+
+           Plus 2 outer ray extensions:
+           leftRay: spaceStates[0] enabled and extended to -∞
+           rightRay: spaceStates[9] enabled and extended to +∞
+        */
+        let spaceStates = new Array(10).fill(false);
+        let leftRay = false;
+        let rightRay = false;
+
+        // Canvas
+        const canvas = document.getElementById('numberLineCanvas');
+        const ctx = canvas.getContext('2d');
+
+        /* --- Preset Problems with Normalized Expected Models --- */
+        const basicProblems = [
+            { 
+                display: 'x > -1', 
+                type: 'single', 
+                val: -1, 
+                op: '>', 
+                pointType: 1, // 1: ○
+                dir: 'right',
+                exp: '-1 の位置に白丸（○）を置き、そこから「右斜め上」へ立ち上げて右方向に伸ばします。' 
+            },
+            { 
+                display: 'x \u2266 2', 
+                type: 'single', 
+                val: 2, 
+                op: '<=', 
+                pointType: 2, // 2: ●
+                dir: 'left',
+                exp: '2 の位置に黒丸（●）を置き、そこから「垂直（真上）」へ伸ばしてから左方向に伸ばします。' 
+            },
+            { 
+                display: 'x \u2267 0', 
+                type: 'single', 
+                val: 0, 
+                op: '>=', 
+                pointType: 2, // 2: ●
+                dir: 'right',
+                exp: '0 の位置に黒丸（●）を置き、そこから「垂直（真上）」へ伸ばしてから右方向に伸ばします。' 
+            },
+            { 
+                display: 'x < 3', 
+                type: 'single', 
+                val: 3, 
+                op: '<', 
+                pointType: 1, // 1: ○
+                dir: 'left',
+                exp: '3 の位置に白丸（○）を置き、そこから「左斜め上」へ立ち上げて左方向に伸ばします。' 
+            },
+            { 
+                display: 'x > -4', 
+                type: 'single', 
+                val: -4, 
+                op: '>', 
+                pointType: 1, 
+                dir: 'right',
+                exp: '-4 の位置に白丸（○）を置き、そこから「右斜め上」へ立ち上げて右方向に伸ばします。' 
+            },
+            { 
+                display: 'x \u2266 -2', 
+                type: 'single', 
+                val: -2, 
+                op: '<=', 
+                pointType: 2, 
+                dir: 'left',
+                exp: '-2 の位置に黒丸（●）を置き、そこから「垂直（真上）」へ伸ばしてから左方向に伸ばします。' 
+            }
+        ];
+
+        const compoundProblems = [
+            { 
+                display: '-2 < x \u2266 3', 
+                type: 'compound', 
+                val1: -2, pointType1: 1, 
+                val2: 3, pointType2: 2,
+                exp: '-2 に白丸（○：斜め立ち上がり）、3 に黒丸（●：垂直立ち上がり）を置き、その間を結びます。' 
+            },
+            { 
+                display: '1 \u2267 x < 4', 
+                displayReal: '1 \u2266 x < 4',
+                type: 'compound', 
+                val1: 1, pointType1: 2, 
+                val2: 4, pointType2: 1,
+                exp: '1 に黒丸（●：垂直立ち上がり）、4 に白丸（○：斜め立ち上がり）を置き、その間を結びます。' 
+            },
+            { 
+                display: '-4 \u2266 x \u2266 0', 
+                type: 'compound', 
+                val1: -4, pointType1: 2, 
+                val2: 0, pointType2: 2,
+                exp: '-4 と 0 の両方に黒丸（●：垂直立ち上がり）を置き、その間を結びます。' 
+            },
+            { 
+                display: '-1 < x < 5', 
+                type: 'compound', 
+                val1: -1, pointType1: 1, 
+                val2: 5, pointType2: 1,
+                exp: '-1 と 5 の両方に白丸（○：斜め立ち上がり）を置き、その間を結びます。' 
+            }
+        ];
+
+        function initCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            resetCanvasState();
+            drawNumberLine();
+        }
+
+        function resetCanvasState() {
+            sfx.tap();
+            for (let i = MIN_VAL; i <= MAX_VAL; i++) {
+                nodeStates[i] = 0; // 0: none, 1: open ○, 2: solid ●
+            }
+            spaceStates.fill(false);
+            leftRay = false;
+            rightRay = false;
+            
+            document.getElementById('feedback-box').classList.add('hidden');
+            updateGuideMessage();
+            drawNumberLine();
+        }
+
+        function hasAnyActiveNodes() {
+            return Object.values(nodeStates).some(state => state > 0);
+        }
+
+        function getActiveNodeValues() {
+            const nodes = [];
+            for (let i = MIN_VAL; i <= MAX_VAL; i++) {
+                if (nodeStates[i] > 0) nodes.push(i);
+            }
+            return nodes;
+        }
+
+        function updateGuideMessage(warningMsg = null) {
+            const guideEl = document.getElementById('guide-message');
+            const guideText = document.getElementById('guide-text');
+
+            if (warningMsg) {
+                guideEl.className = "w-full flex justify-between items-center px-3 py-2 mb-2 bg-amber-100 text-amber-900 rounded-xl text-xs sm:text-sm font-bold shadow-sm animate-bounce-short";
+                guideText.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-base"></i> ${warningMsg}`;
+                return;
+            }
+
+            if (!hasAnyActiveNodes()) {
+                guideEl.className = "w-full flex justify-between items-center px-3 py-2 mb-2 bg-emerald-100 text-emerald-900 rounded-xl text-xs sm:text-sm font-bold shadow-sm";
+                guideText.innerHTML = `<i class="fa-solid fa-circle-1 text-emerald-600 text-base"></i> 1. 数直線上の数字（目盛り）をタップして「○」または「●」を置いてください`;
+            } else {
+                guideEl.className = "w-full flex justify-between items-center px-3 py-2 mb-2 bg-blue-100 text-blue-900 rounded-xl text-xs sm:text-sm font-bold shadow-sm";
+                guideText.innerHTML = `<i class="fa-solid fa-circle-2 text-blue-600 text-base"></i> 2. 点の「右側」または「左側」をタップして範囲を伸ばそう！`;
+            }
+        }
+
+        function valToX(val) {
+            const padding = 55;
+            const width = canvas.getBoundingClientRect().width - padding * 2;
+            const step = width / (MAX_VAL - MIN_VAL);
+            return padding + (val - MIN_VAL) * step;
+        }
+
+        function xToVal(x) {
+            const padding = 55;
+            const width = canvas.getBoundingClientRect().width - padding * 2;
+            const step = width / (MAX_VAL - MIN_VAL);
+            return MIN_VAL + (x - padding) / step;
+        }
+
+        function drawNumberLine() {
+            const w = canvas.getBoundingClientRect().width;
+            const h = canvas.getBoundingClientRect().height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const lineY = h * 0.72;
+            const topY = lineY - 60;
+            const slantOffset = 22;
+
+            // 1. Base Axis
+            ctx.beginPath();
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 3.5;
+            ctx.moveTo(20, lineY);
+            ctx.lineTo(w - 20, lineY);
+            ctx.stroke();
+
+            drawArrowHead(ctx, w - 15, lineY, 0, '#334155', 7);
+            drawArrowHead(ctx, 15, lineY, Math.PI, '#334155', 7);
+
+            // 2. Ticks and Labels
+            for (let i = MIN_VAL; i <= MAX_VAL; i++) {
+                const x = valToX(i);
+                ctx.beginPath();
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 2.5;
+                ctx.moveTo(x, lineY - 8);
+                ctx.lineTo(x, lineY + 8);
+                ctx.stroke();
+
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 15px "Zen Maru Gothic", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(i.toString(), x, lineY + 28);
+            }
+
+            // 3. Inequality Graph
+            const activeNodes = getActiveNodeValues();
+
+            if (activeNodes.length > 0) {
+                ctx.strokeStyle = '#059669';
+                ctx.fillStyle = '#059669';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+
+                if (activeNodes.length === 1) {
+                    const nodeVal = activeNodes[0];
+                    const nodeState = nodeStates[nodeVal];
+                    const nodeX = valToX(nodeVal);
+
+                    if (rightRay) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodeX, lineY);
+                        const topStartX = (nodeState === 1) ? nodeX + slantOffset : nodeX;
+                        ctx.lineTo(topStartX, topY);
+                        const endX = w - 25;
+                        ctx.lineTo(endX, topY);
+                        ctx.stroke();
+                        drawArrowHead(ctx, endX + 4, topY, 0, '#059669', 9);
+                    } else if (leftRay) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodeX, lineY);
+                        const topStartX = (nodeState === 1) ? nodeX - slantOffset : nodeX;
+                        ctx.lineTo(topStartX, topY);
+                        const endX = 25;
+                        ctx.lineTo(endX, topY);
+                        ctx.stroke();
+                        drawArrowHead(ctx, endX - 4, topY, Math.PI, '#059669', 9);
+                    }
+
+                } else if (activeNodes.length >= 2) {
+                    const minNode = Math.min(...activeNodes);
+                    const maxNode = Math.max(...activeNodes);
+
+                    const minIdx = minNode - MIN_VAL; // 0..9
+                    const maxIdx = maxNode - MIN_VAL; // 0..9
+
+                    // Check if middle intervals are active
+                    let isMiddleActive = true;
+                    for (let i = minIdx; i < maxIdx; i++) {
+                        if (!spaceStates[i]) {
+                            isMiddleActive = false;
+                            break;
+                        }
+                    }
+
+                    if (isMiddleActive) {
+                        const minX = valToX(minNode);
+                        const maxX = valToX(maxNode);
+                        const stateMin = nodeStates[minNode];
+                        const stateMax = nodeStates[maxNode];
+
+                        ctx.beginPath();
+                        ctx.moveTo(minX, lineY);
+                        const topMinX = (stateMin === 1) ? minX + slantOffset : minX;
+                        ctx.lineTo(topMinX, topY);
+                        const topMaxX = (stateMax === 1) ? maxX - slantOffset : maxX;
+                        ctx.lineTo(topMaxX, topY);
+                        ctx.lineTo(maxX, lineY);
+                        ctx.stroke();
+                    } else if (leftRay) {
+                        const nodeX = valToX(minNode);
+                        const state = nodeStates[minNode];
+                        ctx.beginPath();
+                        ctx.moveTo(nodeX, lineY);
+                        const topStartX = (state === 1) ? nodeX - slantOffset : nodeX;
+                        ctx.lineTo(topStartX, topY);
+                        ctx.lineTo(25, topY);
+                        ctx.stroke();
+                        drawArrowHead(ctx, 21, topY, Math.PI, '#059669', 9);
+                    } else if (rightRay) {
+                        const nodeX = valToX(maxNode);
+                        const state = nodeStates[maxNode];
+                        ctx.beginPath();
+                        ctx.moveTo(nodeX, lineY);
+                        const topStartX = (state === 1) ? nodeX + slantOffset : nodeX;
+                        ctx.lineTo(topStartX, topY);
+                        ctx.lineTo(w - 25, topY);
+                        ctx.stroke();
+                        drawArrowHead(ctx, w - 21, topY, 0, '#059669', 9);
+                    }
+                }
+            }
+
+            // 4. Circle Nodes Directly on Main Axis Ticks
+            for (let i = MIN_VAL; i <= MAX_VAL; i++) {
+                const state = nodeStates[i];
+                if (state > 0) {
+                    const x = valToX(i);
+                    ctx.beginPath();
+                    ctx.arc(x, lineY, 10, 0, Math.PI * 2);
+
+                    if (state === 1) { // ○ (Open)
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fill();
+                        ctx.lineWidth = 3.5;
+                        ctx.strokeStyle = '#059669';
+                        ctx.stroke();
+                    } else if (state === 2) { // ● (Solid)
+                        ctx.fillStyle = '#059669';
+                        ctx.fill();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = '#047857';
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function drawArrowHead(context, x, y, angle, color = '#334155', size = 7) {
+            context.save();
+            context.translate(x, y);
+            context.rotate(angle);
+            context.beginPath();
+            context.moveTo(3, 0);
+            context.lineTo(-size * 1.4, -size);
+            context.lineTo(-size * 1.4, size);
+            context.closePath();
+            context.fillStyle = color;
+            context.fill();
+            context.restore();
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+
+            const val = xToVal(clickX);
+            const nearestInt = Math.round(val);
+            const nearestX = valToX(nearestInt);
+
+            const distToTick = Math.abs(clickX - nearestX);
+
+            if (distToTick < 24 && nearestInt >= MIN_VAL && nearestInt <= MAX_VAL) {
+                // STEP 1: Toggle Point State (0 -> 1 -> 2 -> 0)
+                nodeStates[nearestInt] = (nodeStates[nearestInt] + 1) % 3;
+
+                if (!hasAnyActiveNodes()) {
+                    spaceStates.fill(false);
+                    leftRay = false;
+                    rightRay = false;
+                }
+
+                sfx.toggle();
+                updateGuideMessage();
+            } else {
+                // STEP 2: Range / Ray Selection
+                if (!hasAnyActiveNodes()) {
+                    sfx.warn();
+                    updateGuideMessage("数直線上の数字（目盛り）をタップして「○」か「●」を置いてください！");
+                    return;
+                }
+
+                const activeNodes = getActiveNodeValues();
+
+                if (activeNodes.length === 1) {
+                    const nodeVal = activeNodes[0];
+                    const nodeIdx = nodeVal - MIN_VAL; // 0..10
+
+                    if (val > nodeVal) {
+                        // Clicked Right
+                        rightRay = !rightRay;
+                        leftRay = false;
+                        spaceStates.fill(false);
+                        if (rightRay) {
+                            for (let i = nodeIdx; i < 10; i++) spaceStates[i] = true;
+                        }
+                    } else {
+                        // Clicked Left
+                        leftRay = !leftRay;
+                        rightRay = false;
+                        spaceStates.fill(false);
+                        if (leftRay) {
+                            for (let i = 0; i < nodeIdx; i++) spaceStates[i] = true;
+                        }
+                    }
+                    sfx.tap();
+                    updateGuideMessage();
+
+                } else if (activeNodes.length >= 2) {
+                    const minNode = Math.min(...activeNodes);
+                    const maxNode = Math.max(...activeNodes);
+
+                    const minIdx = minNode - MIN_VAL;
+                    const maxIdx = maxNode - MIN_VAL;
+
+                    if (val >= minNode && val <= maxNode) {
+                        // Clicked Between Nodes
+                        const isFilled = spaceStates[minIdx];
+                        spaceStates.fill(false);
+                        leftRay = false;
+                        rightRay = false;
+                        if (!isFilled) {
+                            for (let i = minIdx; i < maxIdx; i++) spaceStates[i] = true;
+                        }
+                    } else if (val < minNode) {
+                        leftRay = !leftRay;
+                        rightRay = false;
+                        spaceStates.fill(false);
+                    } else {
+                        rightRay = !rightRay;
+                        leftRay = false;
+                        spaceStates.fill(false);
+                    }
+                    sfx.tap();
+                    updateGuideMessage();
+                }
+            }
+
+            drawNumberLine();
+        });
+
+        function setMode(mode) {
+            currentMode = mode;
+            sfx.tap();
+
+            document.getElementById('btn-mode-basic').className = mode === 'basic' ? 'px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 text-white shadow-md' : 'px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-slate-200 text-slate-700 hover:bg-slate-300';
+            document.getElementById('btn-mode-compound').className = mode === 'compound' ? 'px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 text-white shadow-md' : 'px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-slate-200 text-slate-700 hover:bg-slate-300';
+            document.getElementById('btn-mode-custom').className = mode === 'custom' ? 'px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-emerald-600 text-white shadow-md' : 'px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-xl bg-slate-200 text-slate-700 hover:bg-slate-300';
+
+            const customPanel = document.getElementById('custom-panel');
+            if (mode === 'custom') {
+                customPanel.classList.remove('hidden');
+                applyCustomProblem();
+            } else {
+                customPanel.classList.add('hidden');
+                nextProblem();
+            }
+        }
+
+        function nextProblem() {
+            resetCanvasState();
+
+            if (currentMode === 'basic') {
+                const rand = Math.floor(Math.random() * basicProblems.length);
+                currentProblem = basicProblems[rand];
+            } else if (currentMode === 'compound') {
+                const rand = Math.floor(Math.random() * compoundProblems.length);
+                currentProblem = compoundProblems[rand];
+            }
+
+            displayProblemText(currentProblem.displayReal || currentProblem.display);
+        }
+
+        function displayProblemText(text) {
+            document.getElementById('problem-text').textContent = text;
+        }
+
+        function toggleCustomInputs() {
+            const type = document.getElementById('custom-type').value;
+            if (type === 'basic') {
+                document.getElementById('custom-basic-inputs').classList.remove('hidden');
+                document.getElementById('custom-compound-inputs').classList.add('hidden');
+            } else {
+                document.getElementById('custom-basic-inputs').classList.add('hidden');
+                document.getElementById('custom-compound-inputs').classList.remove('hidden');
+            }
+        }
+
+        function applyCustomProblem() {
+            resetCanvasState();
+            const type = document.getElementById('custom-type').value;
+
+            if (type === 'basic') {
+                const op = document.getElementById('custom-op').value;
+                const val = parseInt(document.getElementById('custom-val').value);
+                const displayOp = op === '>=' ? '\u2267' : op === '<=' ? '\u2266' : op;
+
+                const pType = (op === '>=' || op === '<=') ? 2 : 1;
+                const dir = (op === '>' || op === '>=') ? 'right' : 'left';
+
+                currentProblem = {
+                    display: `x ${displayOp} ${val}`,
+                    type: 'single',
+                    val: val,
+                    op: op,
+                    pointType: pType,
+                    dir: dir,
+                    exp: `${val} の位置に ${pType === 2 ? '黒丸（●：垂直立ち上がり）' : '白丸（○：斜め立ち上がり）'}を置き、${dir === 'right' ? '右方向' : '左方向'}に伸ばします。`
+                };
+
+            } else {
+                let val1 = parseInt(document.getElementById('custom-val1').value);
+                let val2 = parseInt(document.getElementById('custom-val2').value);
+                const op1 = document.getElementById('custom-op1').value;
+                const op2 = document.getElementById('custom-op2').value;
+
+                if (val1 >= val2) val2 = val1 + 1;
+
+                const displayOp1 = op1 === '<=' ? '\u2266' : op1;
+                const displayOp2 = op2 === '<=' ? '\u2266' : op2;
+
+                const pType1 = (op1 === '<=') ? 2 : 1;
+                const pType2 = (op2 === '<=') ? 2 : 1;
+
+                currentProblem = {
+                    display: `${val1} ${displayOp1} x ${displayOp2} ${val2}`,
+                    type: 'compound',
+                    val1: val1, pointType1: pType1,
+                    val2: val2, pointType2: pType2,
+                    exp: `${val1} に${pType1 === 2 ? '黒丸（●）' : '白丸（○）'}、${val2} に${pType2 === 2 ? '黒丸（●）' : '白丸（○）'}を置き、その間を結びます。`
+                };
+            }
+
+            displayProblemText(currentProblem.display);
+        }
+
+        /* --- ACCURATE AND RECONFIGURED VALIDATION ENGINE --- */
+        function checkAnswer() {
+            if (!currentProblem) return;
+
+            let isCorrect = true;
+            const activeNodes = getActiveNodeValues();
+
+            if (currentProblem.type === 'single') {
+                // Single Inequality Validation (e.g., x <= 2)
+                const targetVal = currentProblem.val;
+                const targetPointType = currentProblem.pointType; // 1: ○, 2: ●
+                const targetDir = currentProblem.dir; // 'left' or 'right'
+
+                // 1. Must have exactly 1 active point
+                if (activeNodes.length !== 1 || activeNodes[0] !== targetVal) {
+                    isCorrect = false;
+                }
+
+                // 2. Point type must match exactly (1: ○, 2: ●)
+                if (isCorrect && nodeStates[targetVal] !== targetPointType) {
+                    isCorrect = false;
+                }
+
+                // 3. Direction must match
+                if (isCorrect) {
+                    if (targetDir === 'left' && (!leftRay || rightRay)) {
+                        isCorrect = false;
+                    }
+                    if (targetDir === 'right' && (!rightRay || leftRay)) {
+                        isCorrect = false;
+                    }
+                }
+
+            } else if (currentProblem.type === 'compound') {
+                // Compound Inequality Validation (e.g., -2 < x <= 3)
+                const v1 = currentProblem.val1;
+                const v2 = currentProblem.val2;
+
+                // 1. Must have exactly 2 active points
+                if (activeNodes.length !== 2 || activeNodes[0] !== v1 || activeNodes[1] !== v2) {
+                    isCorrect = false;
+                }
+
+                // 2. Point types must match
+                if (isCorrect && (nodeStates[v1] !== currentProblem.pointType1 || nodeStates[v2] !== currentProblem.pointType2)) {
+                    isCorrect = false;
+                }
+
+                // 3. Middle range must be filled without exterior rays
+                if (isCorrect) {
+                    if (leftRay || rightRay) {
+                        isCorrect = false;
+                    }
+                    const minIdx = v1 - MIN_VAL;
+                    const maxIdx = v2 - MIN_VAL;
+                    for (let i = minIdx; i < maxIdx; i++) {
+                        if (!spaceStates[i]) {
+                            isCorrect = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Show Feedback UI
+            const box = document.getElementById('feedback-box');
+            const header = document.getElementById('feedback-header');
+            const detail = document.getElementById('feedback-detail');
+
+            box.classList.remove('hidden');
+
+            if (isCorrect) {
+                sfx.correct();
+                score++;
+                streak++;
+                
+                box.className = 'p-4 sm:p-5 rounded-2xl border-2 bg-emerald-50 border-emerald-300 text-emerald-900';
+                header.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-2xl"></i> 正解！すばらしい！';
+                detail.textContent = currentProblem.exp;
+
+                try {
+                    confetti({
+                        particleCount: 50,
+                        spread: 60,
+                        origin: { y: 0.8 }
+                    });
+                } catch(e) {}
+
+            } else {
+                sfx.wrong();
+                streak = 0;
+
+                box.className = 'p-4 sm:p-5 rounded-2xl border-2 bg-rose-50 border-rose-300 text-rose-900';
+                header.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-2xl"></i> おしい！もういちど確認してみよう';
+                detail.textContent = `ヒント: ${currentProblem.exp}`;
+            }
+
+            document.getElementById('score-count').textContent = score;
+            document.getElementById('streak-count').textContent = streak;
+        }
+
+        function toggleHintModal() {
+            sfx.tap();
+            const modal = document.getElementById('hint-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+        });
+
+        window.onload = () => {
+            initCanvas();
+            nextProblem();
+        };
+    </script>
+</body>
+</html>
